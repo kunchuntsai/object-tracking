@@ -48,4 +48,9 @@ Usage: ./object-tracking [--camera | <path_to_video>]
 <path_to_executable>
 ./build/object-tracking      # normal build
 ./result/bin/object-tracking # nix configured
+
+While running
+- Keyboard: Q or q for terminate
+- Keyboard: C or c for continuous
+- Keyboard: Space for the next frame
 ```

@@ -1,13 +1,13 @@
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#ifndef LOGGER_H
+#define LOGGER_H
 
-#include <iostream>
-#include <mutex>
 #include <string>
+#include <iostream>
+#include <sstream>
 
 class Logger {
 public:
-    enum LogLevel {
+    enum class LogLevel {
         DEBUG,
         INFO,
         WARNING,
@@ -19,34 +19,21 @@ public:
         return instance;
     }
 
+    void setLogLevel(LogLevel level) {
+        currentLogLevel = level;
+    }
+
     void logMessage(const std::string& message, LogLevel level) {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (level >= currentLevel_) {
-            std::cout << "[" << getLogLevelString(level) << "] " << message << std::endl;
+        if (level >= currentLogLevel) {
+            std::cout << getLevelString(level) << ": " << message << std::endl;
         }
     }
 
-    void setLogLevel(LogLevel level) {
-        std::lock_guard<std::mutex> lock(mutex_);
-        currentLevel_ = level;
-    }
-
-    LogLevel getLogLevel() const {
-        return currentLevel_;
-    }
-
-    // Delete copy constructor and assignment
-    Logger(const Logger&) = delete;
-    Logger& operator=(const Logger&) = delete;
-
-    // Delete move constructor and assignment
-    Logger(Logger&&) = delete;
-    Logger& operator=(Logger&&) = delete;
-
 private:
-    Logger() : currentLevel_(LogLevel::INFO) {}
+    Logger() : currentLogLevel(LogLevel::INFO) {}
+    LogLevel currentLogLevel;
 
-    std::string getLogLevelString(LogLevel level) {
+    std::string getLevelString(LogLevel level) {
         switch (level) {
             case LogLevel::DEBUG: return "DEBUG";
             case LogLevel::INFO: return "INFO";
@@ -55,15 +42,11 @@ private:
             default: return "UNKNOWN";
         }
     }
-
-    LogLevel currentLevel_;
-    mutable std::mutex mutex_;
 };
 
-// Convenience macros for logging
-#define LOG_DEBUG(message) Logger::getInstance().logMessage(message, Logger::LogLevel::DEBUG)
-#define LOG_INFO(message) Logger::getInstance().logMessage(message, Logger::LogLevel::INFO)
-#define LOG_WARNING(message) Logger::getInstance().logMessage(message, Logger::LogLevel::WARNING)
-#define LOG_ERROR(message) Logger::getInstance().logMessage(message, Logger::LogLevel::ERROR)
+#define LOG_DEBUG(message) do { std::ostringstream ss; ss << message; Logger::getInstance().logMessage(ss.str(), Logger::LogLevel::DEBUG); } while(0)
+#define LOG_INFO(message) do { std::ostringstream ss; ss << message; Logger::getInstance().logMessage(ss.str(), Logger::LogLevel::INFO); } while(0)
+#define LOG_WARNING(message) do { std::ostringstream ss; ss << message; Logger::getInstance().logMessage(ss.str(), Logger::LogLevel::WARNING); } while(0)
+#define LOG_ERROR(message) do { std::ostringstream ss; ss << message; Logger::getInstance().logMessage(ss.str(), Logger::LogLevel::ERROR); } while(0)
 
-#endif // LOGGER_HPP
+#endif // LOGGER_H

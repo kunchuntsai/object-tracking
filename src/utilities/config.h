@@ -26,10 +26,6 @@ public:
     }
 
 private:
-    static InputSource inputSource;
-    static std::string videoPath;
+    static inline InputSource inputSource = InputSource::VIDEO;
+    static inline std::string videoPath = "";
 };
-
-// Initialize static members
-Config::InputSource Config::inputSource = Config::InputSource::VIDEO;
-std::string Config::videoPath = "";
