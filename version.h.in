@@ -1,0 +1,3 @@
+#pragma once
+
+#define OBJECT_TRACKING_VERSION "@PROJECT_VERSION@"

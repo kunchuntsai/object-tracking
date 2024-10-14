@@ -1,0 +1,6 @@
+.DS_Store
+build
+
+# nix files
+.direnv
+result
