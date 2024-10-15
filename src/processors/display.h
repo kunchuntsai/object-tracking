@@ -9,8 +9,10 @@ public:
     ~Display();
 
     void showFrame(const Frame& frame);
+    void toggleBoundingBoxes();
     void close();
 
 private:
     std::string windowName;
+    bool showBoundingBoxes;
 };

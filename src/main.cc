@@ -16,30 +16,32 @@
 std::atomic<bool> shouldExit(false);
 std::atomic<bool> continuousMode(false);
 
+
 bool initialization(int argc, char* argv[]) {
     // 1. load a ONNX model: create a function to load an ONNX from a path; create a pseudo function with correct inputs/outputs for now
-    //if (!ONNXModel::loadModel("path/to/model.onnx")) {
-    if (false) { //ONNX_TODO
+    std::string modelPath = argv[1];
+    if (modelPath.length() < 5 || modelPath.substr(modelPath.length() - 5) != ".onnx") {
+        LOG_ERROR("Invalid model file. Expected .onnx file, got: " + modelPath);
+        return false;
+    } else {
+        LOG_DEBUG("Model path: " + modelPath);
+    }
+
+    //if (!ONNXModel::loadModel(modelPath)) { TODO_ONNX
+    if (false) {
         LOG_ERROR("Failed to load ONNX model");
         return false;
     }
 
     // 2. read config: init logger, check if the frame source is from video or camera feed, model parameters
-    Logger::getInstance().setLogLevel(Logger::LogLevel::DEBUG);
-
-    if (argc < 2) {
-        LOG_ERROR("Usage: " + std::string(argv[0]) + " [--camera | <path_to_video>]");
-        return false;
-    }
-
-    std::string input = argv[1];
+    std::string input = argv[2];
     if (input == "--camera") {
         Config::setInputSource(Config::InputSource::CAMERA);
         LOG_DEBUG("Input source set to camera");
     } else {
         Config::setInputSource(Config::InputSource::VIDEO);
         Config::setVideoPath(input);
-        LOG_DEBUG("Input source set to video: " + input);
+        LOG_DEBUG("Input video: " + input);
     }
 
     // 3. open the frame source and getting frame correctly: send one frame per time to step 2
@@ -52,7 +54,7 @@ bool initialization(int argc, char* argv[]) {
     return true;
 }
 
-void handleKeyboard(int key) {
+void handleKeyboard(int key, Display& display) {
     switch (key) {
         case 'q':
         case 'Q':
@@ -62,18 +64,32 @@ void handleKeyboard(int key) {
         case 'C':
             continuousMode = !continuousMode;
             LOG_DEBUG((continuousMode ? "Continuous mode ON" : "Frame-by-frame mode ON"));
-            //std::cout << (continuousMode ? "Continuous mode ON" : "Frame-by-frame mode ON") << std::endl;
             break;
         case ' ':
             if (!continuousMode) {
                 LOG_DEBUG("Next frame");
-                // std::cout << "Next frame" << std::endl;
             }
+            break;
+        case 'b':
+        case 'B':
+            display.toggleBoundingBoxes();
+            LOG_DEBUG("Toggled bounding boxes visibility");
             break;
     }
 }
 
+/**
+ * Usage: ./object-tracking [path_to_model] [--camera | <path_to_video>]
+ */
 int main(int argc, char* argv[]) {
+
+    if (argc < 3) {
+        LOG_ERROR("Usage: " + std::string(argv[0]) + " [<path_to_model>] [--camera | <path_to_video>]");
+        return 1;
+    }
+
+    Logger::getInstance().setLogLevel(Logger::LogLevel::DEBUG);
+
     if (!initialization(argc, argv)) {
         return 1;
     }
@@ -112,13 +128,13 @@ int main(int argc, char* argv[]) {
             newFrameProcessed = false;
 
             int key = cv::waitKey(1);
-            handleKeyboard(key);
+            handleKeyboard(key, display);
 
             if (!continuousMode) {
                 // In frame-by-frame mode, wait for user input
                 while (!shouldExit && !continuousMode) {
                     key = cv::waitKey(0);
-                    handleKeyboard(key);
+                    handleKeyboard(key, display);
                     if (key == ' ') break;  // Space key to advance to next frame
                 }
             }

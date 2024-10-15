@@ -1,6 +1,6 @@
 #ifndef ONNX_MODEL_H
 #define ONNX_MODEL_H
-#if 0 //ONNX_TODO
+#if 0
 #include <string>
 #include <vector>
 #include <opencv2/opencv.hpp>

@@ -43,8 +43,7 @@ nix build
 
 Run the program
 ```
-Usage: ./object-tracking [--camera | <path_to_video>]
-
+Usage: ./object-tracking [path_to_model] [--camera | <path_to_video>]
 <path_to_executable>
 ./build/object-tracking      # normal build
 ./result/bin/object-tracking # nix configured
@@ -53,4 +52,5 @@ While running
 - Keyboard: Q or q for terminate
 - Keyboard: C or c for continuous
 - Keyboard: Space for the next frame
+- Keyboard: B or b for showing/hiding bounding boxes
 ```

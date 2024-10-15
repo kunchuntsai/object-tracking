@@ -1,7 +1,7 @@
 #include "onnx_model.h"
 #include "logger.h"
 
-#if 0 //ONNX_TODO
+#if 0
 ONNXModel& ONNXModel::getInstance() {
     static ONNXModel instance;
     return instance;

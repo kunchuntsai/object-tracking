@@ -7,13 +7,14 @@ extern std::atomic<bool> shouldExit;
 Tracker::Tracker(ThreadSafeQueue<Frame>& input, ThreadSafeQueue<Frame>& output)
     : inputQueue(input), outputQueue(output) {}
 
+//TODO: provide tracking IDs to display
 void Tracker::run() {
     while (!shouldExit) {
         Frame frame;
         if (inputQueue.pop(frame)) {
             if (frame.processed.empty()) { LOG_ERROR("Frame is empty"); continue; }
 
-            // ONNX detector: std::vector<cv::Rect> detect(const cv::Mat& image);
+            // TODO_ONNX: ONNX detector: std::vector<cv::Rect> detect(const cv::Mat& image);
             // BoundingBox detectedBox = ONNXModel::detect(frame.processed);
             BoundingBox detectedBox = createFixedBoundingBox(frame.processed); //Create a fixed bounding box
             frame.detections.clear();
