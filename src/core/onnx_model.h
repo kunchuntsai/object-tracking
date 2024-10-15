@@ -1,6 +1,6 @@
 #ifndef ONNX_MODEL_H
 #define ONNX_MODEL_H
-#if 0
+
 #include <string>
 #include <vector>
 #include <opencv2/opencv.hpp>
@@ -32,5 +32,5 @@ private:
     void preprocess(const cv::Mat& input_image, std::vector<float>& input_tensor);
     std::vector<cv::Rect> postprocess(const std::vector<float>& output_tensor, const cv::Size& original_image_size);
 };
-#endif
+
 #endif // ONNX_MODEL_H

@@ -1,46 +1,46 @@
 #include "onnx_model.h"
 #include "logger.h"
 
-#if 0
+
 ONNXModel& ONNXModel::getInstance() {
     static ONNXModel instance;
     return instance;
 }
 
 bool ONNXModel::loadModel(const std::string& model_path) {
-    try {
-        session = Ort::Session(env, model_path.c_str(), Ort::SessionOptions{nullptr});
+    // try {
+    //     session = Ort::Session(env, model_path.c_str(), Ort::SessionOptions{nullptr});
 
-        Ort::AllocatorWithDefaultOptions allocator;
+    //     Ort::AllocatorWithDefaultOptions allocator;
 
-        // Get input and output node names
-        size_t num_input_nodes = session.GetInputCount();
-        size_t num_output_nodes = session.GetOutputCount();
+    //     // Get input and output node names
+    //     size_t num_input_nodes = session.GetInputCount();
+    //     size_t num_output_nodes = session.GetOutputCount();
 
-        input_node_names.resize(num_input_nodes);
-        output_node_names.resize(num_output_nodes);
+    //     input_node_names.resize(num_input_nodes);
+    //     output_node_names.resize(num_output_nodes);
 
-        for (size_t i = 0; i < num_input_nodes; i++) {
-            char* input_name = session.GetInputName(i, allocator);
-            input_node_names[i] = input_name;
-        }
+    //     for (size_t i = 0; i < num_input_nodes; i++) {
+    //         char* input_name = session.GetInputName(i, allocator);
+    //         input_node_names[i] = input_name;
+    //     }
 
-        for (size_t i = 0; i < num_output_nodes; i++) {
-            char* output_name = session.GetOutputName(i, allocator);
-            output_node_names[i] = output_name;
-        }
+    //     for (size_t i = 0; i < num_output_nodes; i++) {
+    //         char* output_name = session.GetOutputName(i, allocator);
+    //         output_node_names[i] = output_name;
+    //     }
 
-        // Get input shape
-        Ort::TypeInfo type_info = session.GetInputTypeInfo(0);
-        auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
-        input_node_dims = tensor_info.GetShape();
+    //     // Get input shape
+    //     Ort::TypeInfo type_info = session.GetInputTypeInfo(0);
+    //     auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
+    //     input_node_dims = tensor_info.GetShape();
 
-        LOG_INFO("ONNX model loaded successfully");
-        return true;
-    } catch (const Ort::Exception& e) {
-        LOG_ERROR("Error loading ONNX model: " + std::string(e.what()));
+    //     LOG_INFO("ONNX model loaded successfully");
+    //     return true;
+    // } catch (const Ort::Exception& e) {
+    //    LOG_ERROR("Error loading ONNX model: " + std::string(e.what()));
         return false;
-    }
+    // }
 }
 
 std::vector<cv::Rect> ONNXModel::detect(const cv::Mat& image) {
@@ -114,4 +114,3 @@ std::vector<cv::Rect> ONNXModel::postprocess(const std::vector<float>& output_te
 
     return bounding_boxes;
 }
-#endif

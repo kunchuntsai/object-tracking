@@ -5,3 +5,4 @@ build
 # nix config
 .direnv
 result
+.build_completed
