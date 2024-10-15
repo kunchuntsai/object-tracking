@@ -14,7 +14,7 @@ public:
     std::vector<cv::Rect> detect(const cv::Mat& image);
 
 private:
-    ONNXModel() = default;
+    ONNXModel();
     ~ONNXModel() = default;
     ONNXModel(const ONNXModel&) = delete;
     ONNXModel& operator=(const ONNXModel&) = delete;
@@ -27,10 +27,12 @@ private:
     std::vector<const char*> output_node_names;
 
     std::vector<int64_t> input_node_dims;
-    std::vector<int64_t> output_node_dims;
 
     void preprocess(const cv::Mat& input_image, std::vector<float>& input_tensor);
     std::vector<cv::Rect> postprocess(const std::vector<float>& output_tensor, const cv::Size& original_image_size);
+    
+    void printModelInfo();
+    size_t calculateInputTensorSize();
 };
 
 #endif // ONNX_MODEL_H

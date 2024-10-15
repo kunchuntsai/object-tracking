@@ -3,6 +3,7 @@
 #include <vector>
 
 struct BoundingBox {
+    int id;
     cv::Point topLeft;
     cv::Point bottomRight;
 };

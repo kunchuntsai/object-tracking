@@ -12,13 +12,18 @@
 #include "preprocessor.h"
 #include "tracker.h"
 
+/**
+ * TRUE: use dummp bunding box
+ * FALSE: use the import model
+ */
+#define FIXED_BOUNDINGBOX false
 
 std::atomic<bool> shouldExit(false);
 std::atomic<bool> continuousMode(false);
 
 
 bool initialization(int argc, char* argv[]) {
-    // 1. load a ONNX model: create a function to load an ONNX from a path; create a pseudo function with correct inputs/outputs for now
+    // 1. load a ONNX model
     std::string modelPath = argv[1];
     if (modelPath.length() < 5 || modelPath.substr(modelPath.length() - 5) != ".onnx") {
         LOG_ERROR("Invalid model file. Expected .onnx file, got: " + modelPath);
@@ -27,8 +32,7 @@ bool initialization(int argc, char* argv[]) {
         LOG_DEBUG("Model path: " + modelPath);
     }
 
-    //if (!ONNXModel::loadModel(modelPath)) { TODO_ONNX
-    if (false) {
+    if (!ONNXModel::getInstance().loadModel(modelPath)) {
         LOG_ERROR("Failed to load ONNX model");
         return false;
     }
@@ -98,6 +102,7 @@ int main(int argc, char* argv[]) {
 
     Preprocessor preprocessor(preprocessQueue, trackingQueue);
     Tracker tracker(trackingQueue, displayQueue);
+    tracker.setUseFixedBoundingBox(FIXED_BOUNDINGBOX);
 
     std::thread preprocessThread(&Preprocessor::run, &preprocessor);
     std::thread trackingThread(&Tracker::run, &tracker);
