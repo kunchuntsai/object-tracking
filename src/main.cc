@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Logger::getInstance().setLogLevel(Logger::LogLevel::DEBUG);
+    Logger::getInstance().setLogLevel(LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_ERROR | LOG_LEVEL_INFO);
 
     if (!initialization(argc, argv)) {
         return 1;
