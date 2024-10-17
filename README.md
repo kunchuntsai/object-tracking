@@ -43,7 +43,7 @@ nix build
 
 Run the program
 ```
-Usage: ./object-tracking [path_to_model] [--camera | <path_to_video>]
+Usage: ./object-tracking config.ini
 <path_to_executable>
 ./build/object-tracking      # normal build
 ./result/bin/object-tracking # nix configured

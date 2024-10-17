@@ -1,7 +1,9 @@
-#pragma once
+#ifndef DISPLAY_H
+#define DISPLAY_H
 
-#include <string>
+#include <opencv2/opencv.hpp>
 #include "frame.h"
+#include <chrono>
 
 class Display {
 public:
@@ -15,4 +17,13 @@ public:
 private:
     std::string windowName;
     bool showBoundingBoxes;
+
+    // FPS calculation
+    int frameCount;
+    double fps;
+    std::chrono::steady_clock::time_point lastFPSUpdateTime;
+
+    void updateFPS();
 };
+
+#endif // DISPLAY_H

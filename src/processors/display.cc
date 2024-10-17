@@ -1,7 +1,15 @@
 #include <opencv2/opencv.hpp>
 #include "display.h"
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 
-Display::Display() : windowName("Object Tracking"), showBoundingBoxes(true) {
+Display::Display()
+    : windowName("Object Tracking"),
+      showBoundingBoxes(true),
+      frameCount(0),
+      fps(0.0),
+      lastFPSUpdateTime(std::chrono::steady_clock::now()) {
     cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
 }
 
@@ -30,11 +38,35 @@ void Display::showFrame(const Frame& frame) {
             cv::Point topLeft(bbox.topLeft.x * scaleX, bbox.topLeft.y * scaleY);
             cv::Point bottomRight(bbox.bottomRight.x * scaleX, bbox.bottomRight.y * scaleY);
 
-            cv::rectangle(displayFrame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2, 8, 0);
+            // Draw the bounding box in green
+            cv::rectangle(displayFrame, topLeft, bottomRight, cv::Scalar(0, 255, 0), 2, 8, 0);
         }
     }
 
+    // Update and display FPS
+    updateFPS();
+
+    // Format FPS string with two decimal places
+    std::ostringstream fpsStream;
+    fpsStream << "FPS: " << std::fixed << std::setprecision(2) << fps;
+
+    cv::putText(displayFrame, fpsStream.str(), cv::Point(10, 30),
+                cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 255, 0), 2);
+
     cv::imshow(windowName, displayFrame);
+}
+
+void Display::updateFPS() {
+    frameCount++;
+
+    auto currentTime = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastFPSUpdateTime);
+
+    if (elapsed.count() >= 1000) {  // Update every second
+        fps = static_cast<double>(frameCount) * 1000.0 / elapsed.count();
+        frameCount = 0;
+        lastFPSUpdateTime = currentTime;
+    }
 }
 
 void Display::toggleBoundingBoxes() {
