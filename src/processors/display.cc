@@ -35,11 +35,13 @@ void Display::showFrame(const Frame& frame) {
     if (showBoundingBoxes) {
         for (const auto& bbox : frame.detections) {
             // Scale the bounding box coordinates
-            cv::Point topLeft(bbox.topLeft.x * scaleX, bbox.topLeft.y * scaleY);
-            cv::Point bottomRight(bbox.bottomRight.x * scaleX, bbox.bottomRight.y * scaleY);
+            cv::Rect scaledRect(
+                cv::Point(bbox.x * scaleX, bbox.y * scaleY),
+                cv::Point((bbox.x + bbox.width) * scaleX, (bbox.y + bbox.height) * scaleY)
+            );
 
             // Draw the bounding box in green
-            cv::rectangle(displayFrame, topLeft, bottomRight, cv::Scalar(0, 255, 0), 2, 8, 0);
+            cv::rectangle(displayFrame, scaledRect, cv::Scalar(0, 255, 0), 2, 8, 0);
         }
     }
 

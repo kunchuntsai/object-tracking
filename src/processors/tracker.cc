@@ -24,24 +24,18 @@ void Tracker::run() {
             LOG_DEBUG("Processing frame");
 
             // Perform object detection using the ONNX model
-            std::vector<cv::Rect> detections = model.detect(frame.processed);
-            LOG_DEBUG("Detected " + std::to_string(detections.size()) + " objects");
+            if (frame.onnx_input.has_value()) {
+                frame.detections = model.detect(frame.onnx_input.value(), frame.original.size());
+                LOG_DEBUG("Detected " + std::to_string(frame.detections.size()) + " objects");
 
-            // Update tracks (you can implement more sophisticated tracking here if needed)
-            updateTracks(detections, frame.processed.size());
+                // Update tracks (you can implement more sophisticated tracking here if needed)
+                updateTracks(frame.detections, frame.processed.size());
 
-            // Prepare detections with tracking IDs
-            frame.detections.clear();
-            for (const auto& track : tracks) {
-                BoundingBox box;
-                box.topLeft = cv::Point(track.second.rect.x, track.second.rect.y);
-                box.bottomRight = cv::Point(track.second.rect.x + track.second.rect.width, 
-                                            track.second.rect.y + track.second.rect.height);
-                box.id = track.first;
-                frame.detections.push_back(box);
+                LOG_DEBUG("Updated " + std::to_string(tracks.size()) + " tracks");
+            } else {
+                LOG_ERROR("Frame has no ONNX input tensor");
+                frame.detections.clear();
             }
-
-            LOG_DEBUG("Updated " + std::to_string(frame.detections.size()) + " tracks");
 
             outputQueue.push(std::move(frame));
             LOG_DEBUG("Frame processed and pushed to output queue");
@@ -117,24 +111,4 @@ void Tracker::Track::predict() {
 void Tracker::Track::update(const cv::Rect& newRect) {
     rect = newRect;
     timeSinceUpdate = 0;
-}
-
-BoundingBox Tracker::createFixedBoundingBox(const cv::Mat& image) {
-    int width = image.cols;
-    int height = image.rows;
-
-    // Calculate the top-left corner of the central 50x50 pixel rectangle
-    int x = (width - 50) / 2;
-    int y = (height - 50) / 2;
-
-    // Create a BoundingBox for the central 50x50 pixel rectangle
-    BoundingBox central_box;
-    central_box.topLeft = cv::Point(x, y);
-    central_box.bottomRight = cv::Point(x + 50, y + 50);
-
-    return central_box;
-}
-
-void Tracker::setUseFixedBoundingBox(bool use) {
-    useFixedBoundingBox = use;
 }

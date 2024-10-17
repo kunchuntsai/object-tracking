@@ -11,12 +11,10 @@ public:
     Tracker(ThreadSafeQueue<Frame>& input, ThreadSafeQueue<Frame>& output);
     void run();
     bool getProcessedFrame(Frame& frame);
-    void setUseFixedBoundingBox(bool use);
 
 private:
     ThreadSafeQueue<Frame>& inputQueue;
     ThreadSafeQueue<Frame>& outputQueue;
-    bool useFixedBoundingBox;
 
     class Track {
     public:
@@ -35,8 +33,6 @@ private:
 
     void updateTracks(const std::vector<cv::Rect>& detections, const cv::Size& frameSize);
     float calculateIoU(const cv::Rect& box1, const cv::Rect& box2);
-
-    BoundingBox createFixedBoundingBox(const cv::Mat& image);
 };
 
 #endif // TRACKER_H

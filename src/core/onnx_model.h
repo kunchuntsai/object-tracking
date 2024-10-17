@@ -11,7 +11,10 @@ public:
     static ONNXModel& getInstance();
 
     bool loadModel(const std::string& model_path);
-    std::vector<cv::Rect> detect(const cv::Mat& image);
+    std::vector<cv::Rect> detect(const Ort::Value& input_tensor, const cv::Size& original_image_size);
+
+    const Ort::MemoryInfo& getMemoryInfo() const { return memory_info; }
+    const std::vector<int64_t>& getInputNodeDims() const { return input_node_dims; }
 
 private:
     ONNXModel();
@@ -28,7 +31,6 @@ private:
 
     std::vector<int64_t> input_node_dims;
 
-    void preprocess(const cv::Mat& input_image, std::vector<Ort::Value>& input_tensors);
     std::vector<cv::Rect> postprocess(const Ort::Value& output_tensor, const cv::Size& original_image_size);
 
     Ort::SessionOptions session_options;

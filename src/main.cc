@@ -12,11 +12,6 @@
 #include "preprocessor.h"
 #include "tracker.h"
 
-/**
- * TRUE: use dummp bunding box
- * FALSE: use the import model
- */
-#define FIXED_BOUNDINGBOX false
 
 std::atomic<bool> shouldExit(false);
 std::atomic<bool> continuousMode(false);
@@ -91,9 +86,9 @@ int main(int argc, char* argv[]) {
 
     ThreadSafeQueue<Frame> preprocessQueue, trackingQueue, displayQueue;
 
-    Preprocessor preprocessor(preprocessQueue, trackingQueue);
+    ONNXModel& model = ONNXModel::getInstance();
+    Preprocessor preprocessor(preprocessQueue, trackingQueue, model.getMemoryInfo(), model.getInputNodeDims());
     Tracker tracker(trackingQueue, displayQueue);
-    tracker.setUseFixedBoundingBox(FIXED_BOUNDINGBOX);
 
     std::thread preprocessThread(&Preprocessor::run, &preprocessor);
     std::thread trackingThread(&Tracker::run, &tracker);
