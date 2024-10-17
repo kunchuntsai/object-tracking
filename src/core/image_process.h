@@ -21,8 +21,9 @@ public:
 
     // Combine resize and normalize operations
     static cv::Mat processFrame(const cv::Mat& frame, int targetWidth, int targetHeight) {
-        cv::Mat resizedFrame = resize(frame, targetWidth, targetHeight);
-        cv::Mat normalizedFrame = normalize(resizedFrame);
-        return normalizedFrame;
+        // cv::Mat resizedFrame = resize(frame, targetWidth, targetHeight);
+        // cv::Mat normalizedFrame = normalize(resizedFrame);
+        // return normalizedFrame;
+        return frame.clone();
     }
 };

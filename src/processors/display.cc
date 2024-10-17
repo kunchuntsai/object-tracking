@@ -30,7 +30,7 @@ void Display::showFrame(const Frame& frame) {
             cv::Point topLeft(bbox.topLeft.x * scaleX, bbox.topLeft.y * scaleY);
             cv::Point bottomRight(bbox.bottomRight.x * scaleX, bbox.bottomRight.y * scaleY);
 
-            cv::rectangle(displayFrame, topLeft, bottomRight, cv::Scalar(0, 255, 0), 2);
+            cv::rectangle(displayFrame, topLeft, bottomRight, cv::Scalar(255, 0, 0), 2, 8, 0);
         }
     }
 

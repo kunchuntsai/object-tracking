@@ -1,16 +1,18 @@
 #include "tracker.h"
 #include "onnx_model.h"
 #include "logger.h"
+#include "config.h"
 #include <algorithm>
 
 extern std::atomic<bool> shouldExit;
 
 Tracker::Tracker(ThreadSafeQueue<Frame>& input, ThreadSafeQueue<Frame>& output)
-    : inputQueue(input), outputQueue(output), nextTrackID(1), useFixedBoundingBox(false) {
-    // The ONNX model initialization is handled in main.cc
+    : inputQueue(input), outputQueue(output), nextTrackID(1) {
 }
 
 void Tracker::run() {
+    ONNXModel& model = ONNXModel::getInstance();
+    
     while (!shouldExit) {
         Frame frame;
         if (inputQueue.pop(frame)) {
@@ -19,30 +21,30 @@ void Tracker::run() {
                 continue; 
             }
 
-            if (useFixedBoundingBox) {
-                BoundingBox detectedBox = createFixedBoundingBox(frame.processed);
-                frame.detections.clear();
-                frame.detections.push_back(detectedBox);
-            } else {
-                // Perform object detection using the ONNX model
-                std::vector<cv::Rect> detections = ONNXModel::getInstance().detect(frame.processed);
+            LOG_DEBUG("Processing frame");
 
-                // Update tracks
-                updateTracks(detections, frame.processed.size());
+            // Perform object detection using the ONNX model
+            std::vector<cv::Rect> detections = model.detect(frame.processed);
+            LOG_DEBUG("Detected " + std::to_string(detections.size()) + " objects");
 
-                // Prepare detections with tracking IDs
-                frame.detections.clear();
-                for (const auto& track : tracks) {
-                    BoundingBox box;
-                    box.topLeft = cv::Point(track.second.rect.x, track.second.rect.y);
-                    box.bottomRight = cv::Point(track.second.rect.x + track.second.rect.width, 
-                                                track.second.rect.y + track.second.rect.height);
-                    box.id = track.first;
-                    frame.detections.push_back(box);
-                }
+            // Update tracks (you can implement more sophisticated tracking here if needed)
+            updateTracks(detections, frame.processed.size());
+
+            // Prepare detections with tracking IDs
+            frame.detections.clear();
+            for (const auto& track : tracks) {
+                BoundingBox box;
+                box.topLeft = cv::Point(track.second.rect.x, track.second.rect.y);
+                box.bottomRight = cv::Point(track.second.rect.x + track.second.rect.width, 
+                                            track.second.rect.y + track.second.rect.height);
+                box.id = track.first;
+                frame.detections.push_back(box);
             }
 
+            LOG_DEBUG("Updated " + std::to_string(frame.detections.size()) + " tracks");
+
             outputQueue.push(std::move(frame));
+            LOG_DEBUG("Frame processed and pushed to output queue");
         }
     }
 }

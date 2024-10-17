@@ -28,11 +28,11 @@ private:
 
     std::vector<int64_t> input_node_dims;
 
-    void preprocess(const cv::Mat& input_image, std::vector<float>& input_tensor);
-    std::vector<cv::Rect> postprocess(const std::vector<float>& output_tensor, const cv::Size& original_image_size);
-    
-    void printModelInfo();
-    size_t calculateInputTensorSize();
+    void preprocess(const cv::Mat& input_image, std::vector<Ort::Value>& input_tensors);
+    std::vector<cv::Rect> postprocess(const Ort::Value& output_tensor, const cv::Size& original_image_size);
+
+    Ort::SessionOptions session_options;
+    Ort::MemoryInfo memory_info{ nullptr };
 };
 
 #endif // ONNX_MODEL_H
