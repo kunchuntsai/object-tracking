@@ -9,6 +9,8 @@ public:
         CAMERA
     };
 
+    static bool loadFromFile(const std::string& filename);
+
     static void setInputSource(InputSource source) {
         inputSource = source;
     }
@@ -25,7 +27,16 @@ public:
         return videoPath;
     }
 
+    static std::string getModelPath() { return modelPath; }
+    static float getConfidenceThreshold() { return confidenceThreshold; }
+    static float getIoUThreshold() { return iouThreshold; }
+    static int getMaxFramesToSkip() { return maxFramesToSkip; }
+
 private:
     static inline InputSource inputSource = InputSource::VIDEO;
     static inline std::string videoPath = "";
+    static inline std::string modelPath = "";
+    static inline float confidenceThreshold = 0.5f;
+    static inline float iouThreshold = 0.5f;
+    static inline int maxFramesToSkip = 10;
 };

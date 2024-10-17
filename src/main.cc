@@ -22,33 +22,25 @@ std::atomic<bool> shouldExit(false);
 std::atomic<bool> continuousMode(false);
 
 
-bool initialization(int argc, char* argv[]) {
-    // 1. load a ONNX model
-    std::string modelPath = argv[1];
-    if (modelPath.length() < 5 || modelPath.substr(modelPath.length() - 5) != ".onnx") {
-        LOG_ERROR("Invalid model file. Expected .onnx file, got: " + modelPath);
+bool initialization(const std::string& configPath) {
+    // Set log level
+    Logger::getInstance().setLogLevel(LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_ERROR | LOG_LEVEL_INFO);
+
+    // Load configuration
+    if (!Config::loadFromFile(configPath)) {
+        LOG_ERROR("Failed to load configuration file");
         return false;
-    } else {
-        LOG_DEBUG("Model path: " + modelPath);
     }
 
-    if (!ONNXModel::getInstance().loadModel(modelPath)) {
+    // Load ONNX model
+    if (!ONNXModel::getInstance().loadModel(Config::getModelPath())) {
         LOG_ERROR("Failed to load ONNX model");
         return false;
     }
 
-    // 2. read config: init logger, check if the frame source is from video or camera feed, model parameters
-    std::string input = argv[2];
-    if (input == "--camera") {
-        Config::setInputSource(Config::InputSource::CAMERA);
-        LOG_DEBUG("Input source set to camera");
-    } else {
-        Config::setInputSource(Config::InputSource::VIDEO);
-        Config::setVideoPath(input);
-        LOG_DEBUG("Input video: " + input);
-    }
+    // Frame source is already set by the config file
 
-    // 3. open the frame source and getting frame correctly: send one frame per time to step 2
+    // Initialize frame source
     FrameSource& frameSource = FrameSource::getInstance();
     if (!frameSource.initialize()) {
         LOG_ERROR("Failed to initialize frame source");
@@ -83,18 +75,17 @@ void handleKeyboard(int key, Display& display) {
 }
 
 /**
- * Usage: ./object-tracking [path_to_model] [--camera | <path_to_video>]
+ * Usage: ./object-tracking <path_to_config_file>
  */
 int main(int argc, char* argv[]) {
-
-    if (argc < 3) {
-        LOG_ERROR("Usage: " + std::string(argv[0]) + " [<path_to_model>] [--camera | <path_to_video>]");
+    if (argc < 2) {
+        LOG_ERROR("Usage: " + std::string(argv[0]) + " <path_to_config_file>");
         return 1;
     }
 
-    Logger::getInstance().setLogLevel(LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_ERROR | LOG_LEVEL_INFO);
+    std::string configPath = argv[1];
 
-    if (!initialization(argc, argv)) {
+    if (!initialization(configPath)) {
         return 1;
     }
 

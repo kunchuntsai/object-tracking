@@ -52,6 +52,7 @@ file(GLOB SOURCES
     "src/*.cc"
     "src/core/*.cc"
     "src/processors/*.cc"
+    "src/utilities/*.cc"
 )
 
 # Add test files
