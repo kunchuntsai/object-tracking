@@ -1,6 +1,7 @@
 .DS_Store
 build
 .vscode/
+doc/html/
 
 # nix config
 .direnv

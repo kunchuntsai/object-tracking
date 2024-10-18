@@ -24,4 +24,4 @@ cd build
 cmake .. -DPROJECT_VERSION=$VERSION
 make
 
-echo "Build complete. Run with: ./object-tracking [--camera | <path_to_video>]"
+echo "Build complete. Run with: ./build/object-tracking config.ini"
