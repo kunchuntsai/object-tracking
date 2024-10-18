@@ -7,6 +7,9 @@ else()
     project(ObjectTracking VERSION 0.1.0)
 endif()
 
+# Set CMP0074 policy to NEW
+cmake_policy(SET CMP0074 NEW)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -47,7 +50,7 @@ file(GLOB HEADERS
     "src/utilities/*.h"
 )
 
-# Add all source files
+# Add all source files except main.cc
 file(GLOB SOURCES
     "src/*.cc"
     "src/core/*.cc"
@@ -55,8 +58,6 @@ file(GLOB SOURCES
     "src/utilities/*.cc"
 )
 
-# Add test files
-file(GLOB TEST_SOURCES "test/*.cc")
 
 # Find the threading library
 find_package(Threads REQUIRED)
@@ -70,7 +71,7 @@ endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in ${CMAKE_BINARY_DIR}/version.h @ONLY)
 
 # Create the main executable
-add_executable(object-tracking ${HEADERS} ${SOURCES})
+add_executable(object-tracking ${HEADERS} ${SOURCES} ${MAIN_SOURCE})
 
 # Link libraries
 target_link_libraries(object-tracking PRIVATE
@@ -89,27 +90,8 @@ if(APPLE)
     target_link_libraries(object-tracking PRIVATE ${CORE_FOUNDATION})
 endif()
 
-# Create test executables
-foreach(test_source ${TEST_SOURCES})
-    get_filename_component(test_name ${test_source} NAME_WE)
-    add_executable(${test_name} ${test_source} ${HEADERS} ${SOURCES})
-    target_link_libraries(${test_name} PRIVATE
-        Threads::Threads
-        ${OpenCV_LIBS}
-        ${ONNXRuntime_LIBRARIES}
-        ${PROTOBUF_LIBRARIES}
-        nlohmann_json::nlohmann_json
-        re2::re2
-        Eigen3::Eigen
-        ${FLATBUFFERS_LIBRARIES}
-    )
-    if(APPLE)
-        target_link_libraries(${test_name} PRIVATE ${CORE_FOUNDATION})
-    endif()
-endforeach()
-
-# Add ONNX Runtime test subdirectory
-add_subdirectory(test/onnx_test)
+# Add test subdirectory
+add_subdirectory(test)
 
 # Export ONNXRuntime variables to subdirectories
 set(ONNXRuntime_LIBRARIES ${ONNXRuntime_LIBRARIES} PARENT_SCOPE)
