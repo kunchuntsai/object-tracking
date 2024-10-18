@@ -3,8 +3,10 @@
 #include "logger.h"
 #include "config.h"
 #include <algorithm>
+#include <chrono>
 
 extern std::atomic<bool> shouldExit;
+extern std::atomic<long long> totalTrackerTime;
 
 Tracker::Tracker(ThreadSafeQueue<Frame>& input, ThreadSafeQueue<Frame>& output)
     : inputQueue(input), outputQueue(output), nextTrackID(1) {
@@ -16,8 +18,10 @@ void Tracker::run() {
     while (!shouldExit) {
         Frame frame;
         if (inputQueue.pop(frame)) {
+            auto start = std::chrono::high_resolution_clock::now();
+
             if (frame.processed.empty()) { 
-                LOG_ERROR("Frame is empty"); 
+                LOG_ERROR("[Tracker] Frame is empty");
                 continue; 
             }
 
@@ -26,18 +30,22 @@ void Tracker::run() {
             // Perform object detection using the ONNX model
             if (frame.onnx_input.has_value()) {
                 frame.detections = model.detect(frame.onnx_input.value(), frame.original.size());
-                LOG_DEBUG("Detected objects: %zu", frame.detections.size());
+                LOG_DEBUG("[Tracker] Detected objects: %zu", frame.detections.size());
 
-                // Update tracks (you can implement more sophisticated tracking here if needed)
+                // Update tracks
                 updateTracks(frame.detections, frame.processed.size());
 
-                LOG_DEBUG("Updated tracks %zu", tracks.size());
+                LOG_DEBUG("[Tracker] Updated tracks %zu", tracks.size());
             } else {
-                LOG_ERROR("Frame has no ONNX input tensor");
+                LOG_ERROR("[Tracker] Frame has no ONNX input tensor");
                 frame.detections.clear();
             }
 
             outputQueue.push(std::move(frame));
+
+            auto end = std::chrono::high_resolution_clock::now();
+            totalTrackerTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
             LOG_DEBUG("[Tracker] Frame processed and pushed to output queue");
         }
     }

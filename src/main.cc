@@ -15,6 +15,28 @@
 std::atomic<bool> shouldExit(false);
 std::atomic<bool> continuousMode(false);
 
+// Profiling variables
+std::atomic<long long> totalMainTime(0);
+std::atomic<long long> totalPreprocessTime(0);
+std::atomic<long long> totalTrackerTime(0);
+std::atomic<int> frameCount(0);
+
+void printProfilingResults() {
+    int frames = frameCount.load();
+    if (frames == 0) return;
+
+    double avgMainTime = static_cast<double>(totalMainTime.load()) / frames / 1e6;
+    double avgPreprocessTime = static_cast<double>(totalPreprocessTime.load()) / frames / 1e6;
+    double avgTrackerTime = static_cast<double>(totalTrackerTime.load()) / frames / 1e6;
+
+    LOG_INFO("Profiling results (%d frames):", frames);
+    LOG_INFO("   Main thread avg time: %.2f ms", avgMainTime);
+    LOG_INFO("   Preprocessor avg time: %.2f ms", avgPreprocessTime);
+    LOG_INFO("   Tracker avg time: %.2f ms", avgTrackerTime);
+    LOG_INFO("   Total avg time per frame: %.2f ms", avgMainTime + avgPreprocessTime + avgTrackerTime);
+    LOG_INFO("   Average FPS: %.2f", 1000.0 / (avgMainTime + avgPreprocessTime + avgTrackerTime));
+}
+
 bool initialization(const std::string& configPath) {
     // Set log level
     Logger::getInstance().setLogLevel(LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_DEBUG | LOG_LEVEL_INFO);
@@ -98,12 +120,15 @@ int main(int argc, char* argv[]) {
     bool newFrameProcessed = false;
 
     auto processFrameFunc = [&]() {
+        auto start = std::chrono::high_resolution_clock::now();
         if (frameSource.getNextFrame(currentFrame)) {
             preprocessQueue.push(std::move(currentFrame));
             newFrameProcessed = true;
         } else {
             shouldExit = true;
         }
+        auto end = std::chrono::high_resolution_clock::now();
+        totalMainTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     };
 
     while (!shouldExit) {
@@ -113,11 +138,16 @@ int main(int argc, char* argv[]) {
 
         Frame processedFrame;
         if (displayQueue.pop(processedFrame)) {
+            auto start = std::chrono::high_resolution_clock::now();
             display.showFrame(processedFrame);
             newFrameProcessed = false;
 
             int key = cv::waitKey(1);
             handleKeyboard(key, display);
+            auto end = std::chrono::high_resolution_clock::now();
+            totalMainTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
+            frameCount++;
 
             if (!continuousMode) {
                 // In frame-by-frame mode, wait for user input
@@ -141,6 +171,9 @@ int main(int argc, char* argv[]) {
 
     preprocessThread.join();
     trackingThread.join();
+
+    // Print profiling results
+    printProfilingResults();
 
     return 0;
 }
