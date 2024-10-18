@@ -15,8 +15,8 @@ bool FrameSource::initialize() {
     }
 
     if (!cap.isOpened()) {
-        LOG_ERROR("Failed to open " <<
-                  (Config::getInputSource() == Config::InputSource::CAMERA ? "camera" : "video file"));
+        LOG_ERROR("Failed to open %s",
+            (Config::getInputSource() == Config::InputSource::CAMERA ? "camera" : "video file"));
         return false;
     }
 

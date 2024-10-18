@@ -24,7 +24,7 @@ static inline std::string removeComment(const std::string &s) {
 bool Config::loadFromFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        LOG_ERROR("Failed to open config file: " + filename);
+        LOG_ERROR("Failed to open config file: %s", filename.c_str());
         return false;
     }
 
@@ -71,14 +71,14 @@ bool Config::loadFromFile(const std::string& filename) {
                             inputSource = InputSource::VIDEO;
                             LOG_INFO("Input source set to VIDEO");
                         } else {
-                            LOG_WARNING("Invalid input source: '" + trimmedValue + "'. Using default (VIDEO).");
+                            LOG_WARNING("Invalid input source: '%s'. Using default (VIDEO).", trimmedValue.c_str());
                             inputSource = InputSource::VIDEO;
                         }
                     } else if (key == "video_path") {
                         videoPath = trim(removeComment(value));
                         videoPathSpecified = !videoPath.empty();
                         if (videoPathSpecified) {
-                            LOG_INFO("Video path set to: " + videoPath);
+                            LOG_INFO("Video path set to: %s", videoPath.c_str());
                         } else {
                             LOG_WARNING("Empty video path specified.");
                         }

@@ -12,14 +12,12 @@
 #include "preprocessor.h"
 #include "tracker.h"
 
-
 std::atomic<bool> shouldExit(false);
 std::atomic<bool> continuousMode(false);
 
-
 bool initialization(const std::string& configPath) {
     // Set log level
-    Logger::getInstance().setLogLevel(LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_ERROR | LOG_LEVEL_INFO);
+    Logger::getInstance().setLogLevel(LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_DEBUG | LOG_LEVEL_INFO);
 
     // Load configuration
     if (!Config::loadFromFile(configPath)) {
@@ -54,7 +52,7 @@ void handleKeyboard(int key, Display& display) {
         case 'c':
         case 'C':
             continuousMode = !continuousMode;
-            LOG_DEBUG((continuousMode ? "Continuous mode ON" : "Frame-by-frame mode ON"));
+            LOG_DEBUG(continuousMode ? "Continuous mode ON" : "Frame-by-frame mode ON");
             break;
         case ' ':
             if (!continuousMode) {
@@ -74,7 +72,7 @@ void handleKeyboard(int key, Display& display) {
  */
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        LOG_ERROR("Usage: " + std::string(argv[0]) + " <path_to_config_file>");
+        LOG_ERROR("Usage: %s <path_to_config_file>", argv[0]);
         return 1;
     }
 

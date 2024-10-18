@@ -29,11 +29,10 @@ bool ONNXModel::loadModel(const std::string& model_path) {
         output_node_names = {"output"};
         input_node_dims = {1, 3, INPUT_HEIGHT, INPUT_WIDTH};
 
-        LOG_INFO("ONNX model loaded successfully with input dimensions: " +
-                 std::to_string(INPUT_WIDTH) + "x" + std::to_string(INPUT_HEIGHT));
+        LOG_INFO("ONNX model loaded successfully with input dimensions: %dx%d", INPUT_WIDTH, INPUT_HEIGHT);
         return true;
     } catch (const Ort::Exception& e) {
-        LOG_ERROR("Error loading ONNX model: " + std::string(e.what()));
+        LOG_ERROR("Error loading ONNX model: %s", e.what());
         return false;
     }
 }
@@ -46,7 +45,7 @@ std::vector<cv::Rect> ONNXModel::detect(const Ort::Value& input_tensor, const cv
     try {
         output_tensors = session.Run(Ort::RunOptions{nullptr}, input_node_names.data(), input_tensors.data(), input_tensors.size(), output_node_names.data(), output_node_names.size());
     } catch (const Ort::Exception& e) {
-        LOG_ERROR("Error during inference: " + std::string(e.what()));
+        LOG_ERROR("Error during inference: %s", e.what());
         return std::vector<cv::Rect>();
     }
 

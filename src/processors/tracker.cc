@@ -21,24 +21,24 @@ void Tracker::run() {
                 continue; 
             }
 
-            LOG_DEBUG("Processing frame");
+            LOG_DEBUG("[Tracker] Processing frame");
 
             // Perform object detection using the ONNX model
             if (frame.onnx_input.has_value()) {
                 frame.detections = model.detect(frame.onnx_input.value(), frame.original.size());
-                LOG_DEBUG("Detected " + std::to_string(frame.detections.size()) + " objects");
+                LOG_DEBUG("Detected objects: %zu", frame.detections.size());
 
                 // Update tracks (you can implement more sophisticated tracking here if needed)
                 updateTracks(frame.detections, frame.processed.size());
 
-                LOG_DEBUG("Updated " + std::to_string(tracks.size()) + " tracks");
+                LOG_DEBUG("Updated tracks %zu", tracks.size());
             } else {
                 LOG_ERROR("Frame has no ONNX input tensor");
                 frame.detections.clear();
             }
 
             outputQueue.push(std::move(frame));
-            LOG_DEBUG("Frame processed and pushed to output queue");
+            LOG_DEBUG("[Tracker] Frame processed and pushed to output queue");
         }
     }
 }

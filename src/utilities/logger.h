@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <cstdarg>
 
 // Define log levels as bitwise flags
 #define LOG_LEVEL_NONE    0
@@ -36,9 +37,17 @@ public:
         currentLogLevel = level;
     }
 
-    void logMessage(const std::string& message, LogLevel level) {
+    void logMessage(const char* format, LogLevel level, ...) {
         if (static_cast<int>(level) & currentLogLevel) {
-            std::cout << getLevelString(level) << ": " << message << std::endl;
+            va_list args;
+            va_start(args, level);
+
+            char buffer[1024];
+            vsnprintf(buffer, sizeof(buffer), format, args);
+
+            va_end(args);
+
+            std::cout << getLevelString(level) << ": " << buffer << std::endl;
         }
     }
 
@@ -58,28 +67,9 @@ private:
 };
 
 // Macros for logging
-#if LOG_LEVEL & LOG_LEVEL_DEBUG
-    #define LOG_DEBUG(message) do { std::ostringstream ss; ss << message; Logger::getInstance().logMessage(ss.str(), Logger::LogLevel::DEBUG); } while(0)
-#else
-    #define LOG_DEBUG(message) do {} while(0)
-#endif
-
-#if LOG_LEVEL & LOG_LEVEL_INFO
-    #define LOG_INFO(message) do { std::ostringstream ss; ss << message; Logger::getInstance().logMessage(ss.str(), Logger::LogLevel::INFO); } while(0)
-#else
-    #define LOG_INFO(message) do {} while(0)
-#endif
-
-#if LOG_LEVEL & LOG_LEVEL_WARNING
-    #define LOG_WARNING(message) do { std::ostringstream ss; ss << message; Logger::getInstance().logMessage(ss.str(), Logger::LogLevel::WARNING); } while(0)
-#else
-    #define LOG_WARNING(message) do {} while(0)
-#endif
-
-#if LOG_LEVEL & LOG_LEVEL_ERROR
-    #define LOG_ERROR(message) do { std::ostringstream ss; ss << message; Logger::getInstance().logMessage(ss.str(), Logger::LogLevel::ERROR); } while(0)
-#else
-    #define LOG_ERROR(message) do {} while(0)
-#endif
+#define LOG_DEBUG(format, ...) Logger::getInstance().logMessage(format, Logger::LogLevel::DEBUG, ##__VA_ARGS__)
+#define LOG_INFO(format, ...) Logger::getInstance().logMessage(format, Logger::LogLevel::INFO, ##__VA_ARGS__)
+#define LOG_WARNING(format, ...) Logger::getInstance().logMessage(format, Logger::LogLevel::WARNING, ##__VA_ARGS__)
+#define LOG_ERROR(format, ...) Logger::getInstance().logMessage(format, Logger::LogLevel::ERROR, ##__VA_ARGS__)
 
 #endif // LOGGER_H

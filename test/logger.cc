@@ -34,7 +34,7 @@ void runLoggerTests() {
     for (int t = 0; t < 5; ++t) {
         threads.emplace_back([t]() {
             for (int i = 0; i < 5; ++i) {
-                LOG_INFO("Thread " + std::to_string(t) + ": Message " + std::to_string(i));
+                LOG_INFO("Thread %d: Message %d", t, i);
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         });
@@ -46,14 +46,14 @@ void runLoggerTests() {
     logger.setLogLevel(LOG_LEVEL_DEBUG);
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < numMessages; ++i) {
-        LOG_DEBUG("Performance test message " + std::to_string(i));
+        LOG_DEBUG("Performance test message %d", i);
     }
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     double averageTime = static_cast<double>(duration.count()) / numMessages;
 
     logger.setLogLevel(LOG_LEVEL_INFO);
-    LOG_INFO("Average time per log message: " + std::to_string(averageTime) + " microseconds");
+    LOG_INFO("Average time per log message: %.2f microseconds", averageTime);
 
     // Test disabling all logs
     logger.setLogLevel(LOG_LEVEL_NONE);
