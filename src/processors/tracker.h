@@ -31,7 +31,7 @@ private:
     std::unordered_map<int, Track> tracks;
     int nextTrackID;
 
-    void updateTracks(const std::vector<cv::Rect>& detections, const cv::Size& frameSize);
+    void updateTracks(Frame& frame);
     float calculateIoU(const cv::Rect& box1, const cv::Rect& box2);
 };
 

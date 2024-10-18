@@ -39,7 +39,7 @@ void printProfilingResults() {
 
 bool initialization(const std::string& configPath) {
     // Set log level
-    Logger::getInstance().setLogLevel(LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_DEBUG | LOG_LEVEL_INFO);
+    Logger::getInstance().setLogLevel(LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_INFO);
 
     // Load configuration
     if (!Config::loadFromFile(configPath)) {

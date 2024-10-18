@@ -37,8 +37,8 @@ void Tracker::run() {
             frame.detections = model.detect(frame.onnx_input.value(), frame.original.size());
             LOG_DEBUG("[Tracker] Detected objects: %zu", frame.detections.size());
 
-            // Update tracks
-            updateTracks(frame.detections, frame.processed.size());
+            // Update tracks and associate track IDs with detections
+            updateTracks(frame);
             LOG_DEBUG("[Tracker] Updated tracks %zu", tracks.size());
 
             outputQueue.push(std::move(frame));
@@ -55,7 +55,7 @@ bool Tracker::getProcessedFrame(Frame& frame) {
     return outputQueue.pop(frame);
 }
 
-void Tracker::updateTracks(const std::vector<cv::Rect>& detections, const cv::Size& frameSize) {
+void Tracker::updateTracks(Frame& frame) {
     // Predict new locations of existing tracks
     for (auto& track : tracks) {
         track.second.predict();
@@ -63,11 +63,15 @@ void Tracker::updateTracks(const std::vector<cv::Rect>& detections, const cv::Si
 
     // Associate detections with existing tracks
     std::vector<int> unassignedDetections;
-    for (size_t i = 0; i < detections.size(); ++i) {
+    frame.trackIDs.clear();
+    frame.trackIDs.resize(frame.detections.size(), -1);  // Initialize with -1 (no track)
+
+    for (size_t i = 0; i < frame.detections.size(); ++i) {
         bool assigned = false;
         for (auto& track : tracks) {
-            if (calculateIoU(detections[i], track.second.rect) > 0.5) {
-                track.second.update(detections[i]);
+            if (calculateIoU(frame.detections[i], track.second.rect) > 0.5) {
+                track.second.update(frame.detections[i]);
+                frame.trackIDs[i] = track.first;  // Assign track ID to detection
                 assigned = true;
                 break;
             }
@@ -79,7 +83,8 @@ void Tracker::updateTracks(const std::vector<cv::Rect>& detections, const cv::Si
 
     // Create new tracks for unassigned detections
     for (int i : unassignedDetections) {
-        tracks[nextTrackID] = Track(detections[i], nextTrackID);
+        tracks[nextTrackID] = Track(frame.detections[i], nextTrackID);
+        frame.trackIDs[i] = nextTrackID;  // Assign new track ID to detection
         nextTrackID++;
     }
 

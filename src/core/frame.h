@@ -9,6 +9,7 @@ struct Frame {
     cv::Mat processed;
     std::optional<Ort::Value> onnx_input;
     std::vector<cv::Rect> detections;
+    std::vector<int> trackIDs;
 
     Frame() = default;
     Frame(const Frame&) = delete;

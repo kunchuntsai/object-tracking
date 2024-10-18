@@ -31,9 +31,12 @@ void Display::showFrame(const Frame& frame) {
     float scaleX = static_cast<float>(displayFrame.cols) / frame.processed.cols;
     float scaleY = static_cast<float>(displayFrame.rows) / frame.processed.rows;
 
-    // Draw bounding boxes on the display frame if enabled
+    // Draw bounding boxes and track IDs on the display frame if enabled
     if (showBoundingBoxes) {
-        for (const auto& bbox : frame.detections) {
+        for (size_t i = 0; i < frame.detections.size(); ++i) {
+            const auto& bbox = frame.detections[i];
+            int trackID = frame.trackIDs[i];  // Assuming trackIDs vector is added to Frame struct
+
             // Scale the bounding box coordinates
             cv::Rect scaledRect(
                 cv::Point(bbox.x * scaleX, bbox.y * scaleY),
@@ -42,6 +45,18 @@ void Display::showFrame(const Frame& frame) {
 
             // Draw the bounding box in green
             cv::rectangle(displayFrame, scaledRect, cv::Scalar(0, 255, 0), 2, 8, 0);
+
+            // Draw the track ID
+            if (trackID != -1) {  // Only draw if a valid track ID is assigned
+                std::string idText = std::to_string(trackID);
+                double fontScale = 1.5;  // Increased font scale for larger text
+                int thickness = 2;
+                cv::Point textPos(scaledRect.x, scaledRect.y - 10);  // Position the text above the bounding box
+
+                // Draw the track ID text with a contrasting outline
+                cv::putText(displayFrame, idText, textPos, cv::FONT_HERSHEY_SIMPLEX, fontScale, cv::Scalar(0, 0, 0), thickness + 2);  // Black outline
+                cv::putText(displayFrame, idText, textPos, cv::FONT_HERSHEY_SIMPLEX, fontScale, cv::Scalar(0, 255, 0), thickness);  // Green text
+            }
         }
     }
 
