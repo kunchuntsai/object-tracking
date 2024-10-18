@@ -21,25 +21,25 @@ void Tracker::run() {
             auto start = std::chrono::high_resolution_clock::now();
 
             if (frame.processed.empty()) { 
-                LOG_ERROR("[Tracker] Frame is empty");
+                LOG_ERROR("[Tracker] Frame.processed is empty");
                 continue; 
+            }
+
+            if (!frame.onnx_input.has_value()) {
+                LOG_ERROR("[Tracker] Frame has no ONNX input tensor");
+                frame.detections.clear();
+                continue;
             }
 
             LOG_DEBUG("[Tracker] Processing frame");
 
             // Perform object detection using the ONNX model
-            if (frame.onnx_input.has_value()) {
-                frame.detections = model.detect(frame.onnx_input.value(), frame.original.size());
-                LOG_DEBUG("[Tracker] Detected objects: %zu", frame.detections.size());
+            frame.detections = model.detect(frame.onnx_input.value(), frame.original.size());
+            LOG_DEBUG("[Tracker] Detected objects: %zu", frame.detections.size());
 
-                // Update tracks
-                updateTracks(frame.detections, frame.processed.size());
-
-                LOG_DEBUG("[Tracker] Updated tracks %zu", tracks.size());
-            } else {
-                LOG_ERROR("[Tracker] Frame has no ONNX input tensor");
-                frame.detections.clear();
-            }
+            // Update tracks
+            updateTracks(frame.detections, frame.processed.size());
+            LOG_DEBUG("[Tracker] Updated tracks %zu", tracks.size());
 
             outputQueue.push(std::move(frame));
 

@@ -19,17 +19,18 @@ public:
     }
 
     static cv::Mat processFrame(const cv::Mat& frame, int targetWidth, int targetHeight) {
-        cv::Mat resizedFrame = resize(frame, targetWidth, targetHeight);
-        cv::Mat normalizedFrame = normalize(resizedFrame);
-        return normalizedFrame;
+        // cv::Mat resizedFrame = resize(frame, targetWidth, targetHeight);
+        // cv::Mat normalizedFrame = normalize(resizedFrame);
+        // return normalizedFrame;
+        return frame.clone();
     }
 
     static Ort::Value preprocessForONNX(const cv::Mat& input_image, const Ort::MemoryInfo& memory_info, const std::vector<int64_t>& input_node_dims) {
         // Ensure input_image is already resized to the correct dimensions (640x640)
-        CV_Assert(input_image.cols == 640 && input_image.rows == 640);
+        // input_node_dims[3]: width; input_node_dims[2]: height
 
         // Create blob from image
-        cv::Mat blob = cv::dnn::blobFromImage(input_image, 1.0, cv::Size(640, 640), cv::Scalar(0, 0, 0), true, false);
+        cv::Mat blob = cv::dnn::blobFromImage(input_image, 1.0/255.0, cv::Size(input_node_dims[3], input_node_dims[2]), cv::Scalar(0, 0, 0), false, false);
 
         size_t input_tensor_size = blob.total() * blob.elemSize();
 

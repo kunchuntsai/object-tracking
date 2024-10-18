@@ -26,16 +26,12 @@ void Preprocessor::run() {
             auto start = std::chrono::high_resolution_clock::now();
 
             if (frame.original.empty()) {
-                LOG_ERROR("[Preproc] Frame is empty");
+                LOG_ERROR("[Preproc] Frame.original is empty");
                 continue;
             }
-            frame.processed = ImageProcessor::processFrame(frame.original, inputWidth, inputHeight);
 
-            if (frame.processed.cols != inputWidth || frame.processed.rows != inputHeight) {
-                LOG_ERROR("[Preproc] Processed frame dimensions (%dx%d) do not match model input dimensions (%dx%d)",
-                          frame.processed.cols, frame.processed.rows, inputWidth, inputHeight);
-                continue;
-            }
+            // For output frame data
+            frame.processed = ImageProcessor::processFrame(frame.original, inputWidth, inputHeight);
 
             // Preprocess for ONNX
             frame.onnx_input = ImageProcessor::preprocessForONNX(frame.processed, memory_info, input_node_dims);
