@@ -38,14 +38,15 @@ void printProfilingResults() {
 }
 
 bool initialization(const std::string& configPath) {
-    // Set log level
-    Logger::getInstance().setLogLevel(LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_INFO);
-
     // Load configuration
     if (!Config::loadFromFile(configPath)) {
         LOG_ERROR("Failed to load configuration file");
         return false;
     }
+
+    // Set log level based on configuration
+    int logLevelMask = Config::getLogLevelMask();
+    Logger::getInstance().setLogLevel(logLevelMask);
 
     // Load ONNX model
     if (!ONNXModel::getInstance().loadModel(Config::getModelPath())) {

@@ -34,6 +34,9 @@ bool Config::loadFromFile(const std::string& filename) {
     bool sourceSpecified = false;
     bool videoPathSpecified = false;
 
+    // Set default log level mask
+    logLevelMask = LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_INFO;
+
     while (std::getline(file, line)) {
         std::istringstream is_line(line);
         std::string key;
@@ -86,6 +89,19 @@ bool Config::loadFromFile(const std::string& filename) {
                 } else if (section == "Tracking") {
                     if (key == "iou_threshold") iouThreshold = std::stof(value);
                     else if (key == "max_frames_to_skip") maxFramesToSkip = std::stoi(value);
+                } else if (section == "Logging") {
+                    if (key == "debug") {
+                        std::string trimmedValue = trim(removeComment(value));
+                        std::transform(trimmedValue.begin(), trimmedValue.end(), trimmedValue.begin(),
+                                    [](unsigned char c){ return std::tolower(c); });
+                        if (trimmedValue == "true" || trimmedValue == "1" || trimmedValue == "yes") {
+                            logLevelMask |= LOG_LEVEL_DEBUG;
+                            LOG_INFO("Debug logging enabled");
+                        } else {
+                            logLevelMask &= ~LOG_LEVEL_DEBUG;
+                            LOG_INFO("Debug logging disabled");
+                        }
+                    }
                 }
             }
         }

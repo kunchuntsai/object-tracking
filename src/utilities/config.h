@@ -31,6 +31,7 @@ public:
     static float getConfidenceThreshold() { return confidenceThreshold; }
     static float getIoUThreshold() { return iouThreshold; }
     static int getMaxFramesToSkip() { return maxFramesToSkip; }
+    static int getLogLevelMask() { return logLevelMask; }
 
 private:
     static inline InputSource inputSource = InputSource::VIDEO;
@@ -39,4 +40,5 @@ private:
     static inline float confidenceThreshold = 0.5f;
     static inline float iouThreshold = 0.5f;
     static inline int maxFramesToSkip = 10;
+    static inline int logLevelMask = 0;
 };
