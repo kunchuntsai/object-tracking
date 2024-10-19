@@ -49,7 +49,7 @@ Ensure you have the following dependencies installed:
 2. Build the project:
    - For standard build:
      ```
-     ./build.sh 0.1.0  # or your desired version
+     ./scripts/build.sh 0.1.0  # or your desired version
      ```
    - For Nix-based build:
      ```
@@ -57,6 +57,14 @@ Ensure you have the following dependencies installed:
      nix flake update
      nix build
      ```
+
+## ONNX Model
+
+This project uses a YOLOv7 model. Please refer to [Simple-ONNX-runtime-c-example](https://github.com/JINSCOTT/Simple-ONNX-runtime-c-example).
+
+To use a custom ONNX model:
+1. Place your `.onnx` file in a directory
+2. Update the model path in `config/config.ini`
 
 ## Usage
 
@@ -66,20 +74,18 @@ Run the program:
 ./result/bin/object-tracking config.ini  # for Nix-based build
 ```
 
+Perform the tests for logger and onnx loading
+```
+./build/run_tests <path-to-model>  # for standard build
+./result/bin/run_tests <path-to-model>  # for Nix-based build
+```
+
 ### Runtime Controls
 
 - `Q` or `q`: Terminate the program
 - `C` or `c`: Toggle continuous mode
 - `Space`: Advance to the next frame
 - `B` or `b`: Show/hide bounding boxes
-
-## ONNX Model
-
-This project uses a YOLOv7 model. For details and implementation, refer to [Simple-ONNX-runtime-c-example](https://github.com/JINSCOTT/Simple-ONNX-runtime-c-example).
-
-To use a custom ONNX model:
-1. Place your `.onnx` file in the `models/` directory
-2. Update the model path in `config.ini`
 
 ## Documentation
 

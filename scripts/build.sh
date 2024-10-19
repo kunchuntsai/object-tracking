@@ -8,6 +8,12 @@ else
     VERSION=$1
 fi
 
+# Get the directory of the script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Navigate to the project root directory
+cd "$SCRIPT_DIR/.."
+
 # Check if build directory exists
 if [ -d "build" ]; then
     echo "Build directory already exists. Cleaning..."
@@ -24,4 +30,4 @@ cd build
 cmake .. -DPROJECT_VERSION=$VERSION
 make
 
-echo "Build complete. Run with: ./build/object-tracking config.ini"
+echo "Build complete. Run with: ./scripts/run.sh config/config.ini"
