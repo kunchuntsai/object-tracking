@@ -11,6 +11,9 @@
 #include <opencv2/opencv.hpp>
 #include <onnxruntime_cxx_api.h>
 
+// Simplified macro definition
+#define PROVIDER_HEADER(provider) <onnxruntime_##provider##_provider_factory.h>
+
 /**
  * @class ONNXModel
  * @brief Singleton class for ONNX model operations
@@ -56,14 +59,15 @@ private:
     ONNXModel(const ONNXModel&) = delete;
     ONNXModel& operator=(const ONNXModel&) = delete;
 
-    Ort::Env env; /**< ONNX runtime environment */
-    Ort::Session session{nullptr}; /**< ONNX runtime session */
-    Ort::AllocatorWithDefaultOptions allocator; /**< ONNX runtime allocator */
+    /**
+     * @brief Append CoreML execution provider if available
+     */
+    void appendCoreMLExecutionProvider();
 
-    std::vector<const char*> input_node_names; /**< Names of input nodes */
-    std::vector<const char*> output_node_names; /**< Names of output nodes */
-
-    std::vector<int64_t> input_node_dims; /**< Dimensions of input nodes */
+    /**
+     * @brief Append CUDA execution provider if available
+     */
+    void appendCUDAExecutionProvider();
 
     /**
      * @brief Post-process the output tensor to get bounding boxes
@@ -72,6 +76,15 @@ private:
      * @return Vector of detected object bounding boxes
      */
     std::vector<cv::Rect> postprocess(const Ort::Value& output_tensor, const cv::Size& original_image_size);
+
+    Ort::Env env; /**< ONNX runtime environment */
+    Ort::Session session{nullptr}; /**< ONNX runtime session */
+    Ort::AllocatorWithDefaultOptions allocator; /**< ONNX runtime allocator */
+
+    std::vector<const char*> input_node_names; /**< Names of input nodes */
+    std::vector<const char*> output_node_names; /**< Names of output nodes */
+
+    std::vector<int64_t> input_node_dims; /**< Dimensions of input nodes */
 
     Ort::SessionOptions session_options; /**< ONNX runtime session options */
     Ort::MemoryInfo memory_info{ nullptr }; /**< ONNX runtime memory info */

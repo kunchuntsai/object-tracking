@@ -31,25 +31,32 @@ void Tracker::run() {
                 continue;
             }
 
-            LOG_DEBUG("[Tracker] Processing frame");
-
             // Perform object detection using the ONNX model
+            auto detect_start = std::chrono::high_resolution_clock::now();
             frame.detections = model.detect(frame.onnx_input.value(), frame.original.size());
-            LOG_DEBUG("[Tracker] Detected objects: %zu", frame.detections.size());
+            auto detect_end = std::chrono::high_resolution_clock::now();
+            auto detect_time = std::chrono::duration_cast<std::chrono::nanoseconds>(detect_end - detect_start).count();
+            LOG_DEBUG("[Tracker] ONNX detection time: %.3f ms", detect_time / 1e6);
 
             // Update tracks and associate track IDs with detections
+            auto update_start = std::chrono::high_resolution_clock::now();
             updateTracks(frame);
-            LOG_DEBUG("[Tracker] Updated tracks %zu", tracks.size());
+            auto update_end = std::chrono::high_resolution_clock::now();
+            auto update_time = std::chrono::duration_cast<std::chrono::nanoseconds>(update_end - update_start).count();
+            LOG_DEBUG("[Tracker] Track update time: %.3f ms", update_time / 1e6);
 
             outputQueue.push(std::move(frame));
 
             auto end = std::chrono::high_resolution_clock::now();
-            totalTrackerTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+            auto total_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+            LOG_DEBUG("[Tracker] Frame processing time: %.3f ms", total_time / 1e6);
 
-            LOG_DEBUG("[Tracker] Frame processed and pushed to output queue");
+            // Update the totalTrackerTime
+            totalTrackerTime += total_time;
         }
     }
 }
+
 
 bool Tracker::getProcessedFrame(Frame& frame) {
     return outputQueue.pop(frame);

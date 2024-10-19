@@ -43,18 +43,16 @@ public:
      */
     void close();
 
+    /**
+     * @brief Set the current FPS value.
+     * @param newFPS The new FPS value to be displayed.
+     */
+    void setFPS(double newFPS) { fps = newFPS; }
+
 private:
     std::string windowName; ///< Name of the display window
     bool showBoundingBoxes; ///< Flag to control bounding box display
-
-    int frameCount; ///< Counter for processed frames
-    double fps; ///< Calculated frames per second
-    std::chrono::steady_clock::time_point lastFPSUpdateTime; ///< Timestamp of last FPS update
-
-    /**
-     * @brief Update the FPS calculation.
-     */
-    void updateFPS();
+    double fps; ///< Current FPS to be displayed
 };
 
 #endif // DISPLAY_H

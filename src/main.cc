@@ -2,6 +2,7 @@
 #include <thread>
 #include <atomic>
 #include <string>
+#include <chrono>
 #include "config.h"
 #include "logger.h"
 #include "thread_safe_queue.h"
@@ -20,6 +21,11 @@ std::atomic<long long> totalMainTime(0);
 std::atomic<long long> totalPreprocessTime(0);
 std::atomic<long long> totalTrackerTime(0);
 std::atomic<int> frameCount(0);
+
+// For real-time FPS calculation
+std::chrono::steady_clock::time_point lastFPSUpdateTime;
+long long totalFrameTime = 0;
+int realtimeFrameCount = 0;
 
 void printProfilingResults() {
     int frames = frameCount.load();
@@ -120,12 +126,15 @@ int main(int argc, char* argv[]) {
     Frame currentFrame;
     bool newFrameProcessed = false;
 
+    lastFPSUpdateTime = std::chrono::steady_clock::now();
+
     auto processFrameFunc = [&]() {
         auto start = std::chrono::high_resolution_clock::now();
         if (frameSource.getNextFrame(currentFrame)) {
             preprocessQueue.push(std::move(currentFrame));
             newFrameProcessed = true;
         } else {
+            LOG_INFO("End of video reached. Terminating program.");
             shouldExit = true;
         }
         auto end = std::chrono::high_resolution_clock::now();
@@ -133,8 +142,11 @@ int main(int argc, char* argv[]) {
     };
 
     while (!shouldExit) {
+        auto frameStartTime = std::chrono::steady_clock::now();
+
         if (continuousMode || !newFrameProcessed) {
             processFrameFunc();
+            if (shouldExit) break;  // Exit the loop if end of video is reached
         }
 
         Frame processedFrame;
@@ -149,6 +161,7 @@ int main(int argc, char* argv[]) {
             totalMainTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
             frameCount++;
+            realtimeFrameCount++;
 
             if (!continuousMode) {
                 // In frame-by-frame mode, wait for user input
@@ -158,6 +171,29 @@ int main(int argc, char* argv[]) {
                     if (key == ' ') break;  // Space key to advance to next frame
                 }
             }
+        }
+
+        auto frameEndTime = std::chrono::steady_clock::now();
+        totalFrameTime += std::chrono::duration_cast<std::chrono::milliseconds>(frameEndTime - frameStartTime).count();
+
+        // Calculate and print real-time FPS every second
+        auto currentTime = std::chrono::steady_clock::now();
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastFPSUpdateTime).count();
+        if (elapsedTime >= 1000) {
+            double fps = static_cast<double>(realtimeFrameCount) * 1000.0 / totalFrameTime;
+
+            // Get current timestamp
+            auto now = std::chrono::system_clock::now();
+            auto now_c = std::chrono::system_clock::to_time_t(now);
+            std::stringstream ss;
+            ss << std::put_time(std::localtime(&now_c), "%H:%M:%S");
+
+            LOG_INFO("Real-time FPS (%s): %.2f", ss.str().c_str(), fps);
+            display.setFPS(fps);
+
+            lastFPSUpdateTime = currentTime;
+            totalFrameTime = 0;
+            realtimeFrameCount = 0;
         }
 
         // Check if we should exit

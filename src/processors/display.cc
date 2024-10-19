@@ -7,9 +7,7 @@
 Display::Display()
     : windowName("Object Tracking"),
       showBoundingBoxes(true),
-      frameCount(0),
-      fps(0.0),
-      lastFPSUpdateTime(std::chrono::steady_clock::now()) {
+      fps(0.0) {
     cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
 }
 
@@ -35,7 +33,7 @@ void Display::showFrame(const Frame& frame) {
     if (showBoundingBoxes) {
         for (size_t i = 0; i < frame.detections.size(); ++i) {
             const auto& bbox = frame.detections[i];
-            int trackID = frame.trackIDs[i];  // Assuming trackIDs vector is added to Frame struct
+            int trackID = frame.trackIDs[i];
 
             // Scale the bounding box coordinates
             cv::Rect scaledRect(
@@ -47,21 +45,17 @@ void Display::showFrame(const Frame& frame) {
             cv::rectangle(displayFrame, scaledRect, cv::Scalar(0, 255, 0), 2, 8, 0);
 
             // Draw the track ID
-            if (trackID != -1) {  // Only draw if a valid track ID is assigned
+            if (trackID != -1) {
                 std::string idText = std::to_string(trackID);
-                double fontScale = 1.5;  // Increased font scale for larger text
+                double fontScale = 1.5;
                 int thickness = 2;
-                cv::Point textPos(scaledRect.x, scaledRect.y - 10);  // Position the text above the bounding box
+                cv::Point textPos(scaledRect.x, scaledRect.y - 10);
 
-                // Draw the track ID text with a contrasting outline
-                cv::putText(displayFrame, idText, textPos, cv::FONT_HERSHEY_SIMPLEX, fontScale, cv::Scalar(0, 0, 0), thickness + 2);  // Black outline
-                cv::putText(displayFrame, idText, textPos, cv::FONT_HERSHEY_SIMPLEX, fontScale, cv::Scalar(0, 255, 0), thickness);  // Green text
+                cv::putText(displayFrame, idText, textPos, cv::FONT_HERSHEY_SIMPLEX, fontScale, cv::Scalar(0, 0, 0), thickness + 2);
+                cv::putText(displayFrame, idText, textPos, cv::FONT_HERSHEY_SIMPLEX, fontScale, cv::Scalar(0, 255, 0), thickness);
             }
         }
     }
-
-    // Update and display FPS
-    updateFPS();
 
     // Format FPS string with two decimal places
     std::ostringstream fpsStream;
@@ -71,19 +65,6 @@ void Display::showFrame(const Frame& frame) {
                 cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 255, 0), 2);
 
     cv::imshow(windowName, displayFrame);
-}
-
-void Display::updateFPS() {
-    frameCount++;
-
-    auto currentTime = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastFPSUpdateTime);
-
-    if (elapsed.count() >= 1000) {  // Update every second
-        fps = static_cast<double>(frameCount) * 1000.0 / elapsed.count();
-        frameCount = 0;
-        lastFPSUpdateTime = currentTime;
-    }
 }
 
 void Display::toggleBoundingBoxes() {

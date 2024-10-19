@@ -10,9 +10,6 @@ extern std::atomic<long long> totalPreprocessTime;
 Preprocessor::Preprocessor(ThreadSafeQueue<Frame>& input, ThreadSafeQueue<Frame>& output,
                            const Ort::MemoryInfo& memory_info, const std::vector<int64_t>& input_node_dims)
     : inputQueue(input), outputQueue(output), memory_info(memory_info), input_node_dims(input_node_dims) {
-
-    LOG_INFO("[Preproc] ONNX model input dimensions: %ldx%ldx%ldx%ld",
-             input_node_dims[0], input_node_dims[1], input_node_dims[2], input_node_dims[3]);
 }
 
 void Preprocessor::run() {
