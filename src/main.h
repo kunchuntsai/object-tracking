@@ -1,8 +1,6 @@
 /**
  * @file main.h
  * @brief Main header file for the Object Tracking project.
- * @author Your Name
- * @date YYYY-MM-DD
  */
 
 #ifndef MAIN_H

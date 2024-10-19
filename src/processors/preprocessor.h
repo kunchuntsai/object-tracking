@@ -1,8 +1,6 @@
 /**
  * @file preprocessor.h
  * @brief Header file for the Preprocessor class, responsible for preparing frames for inference.
- * @author Your Name
- * @date YYYY-MM-DD
  */
 
 #pragma once

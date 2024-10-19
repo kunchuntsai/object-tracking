@@ -1,8 +1,6 @@
 /**
  * @file display.h
  * @brief Header file for the Display class, responsible for visualizing frames.
- * @author Your Name
- * @date YYYY-MM-DD
  */
 
 #ifndef DISPLAY_H

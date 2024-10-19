@@ -1,8 +1,6 @@
 /**
  * @file tracker.h
  * @brief Header file for the Tracker class, responsible for object tracking.
- * @author Your Name
- * @date YYYY-MM-DD
  */
 
 #ifndef TRACKER_H
