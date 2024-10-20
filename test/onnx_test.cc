@@ -8,6 +8,7 @@
 
 extern std::string onnx_model_path;
 
+
 TEST(ONNXRuntimeInstallation) {
     // Check if we can create an ONNX Runtime environment
     try {
@@ -101,4 +102,54 @@ TEST(ONNXModelExceptionHandling) {
     // We expect an empty vector of bounding boxes when the model is not properly initialized
     std::vector<cv::Rect> result = model.detect(dummy_input_tensor, cv::Size(1280, 720));
     ASSERT_TRUE(result.empty());
+}
+
+TEST(ONNXRuntimeCoreMLSupport) {
+    try {
+        Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "CoreMLSupportTest");
+        Ort::SessionOptions session_options;
+
+        bool coreml_available = false;
+        bool coreml_expected = false;
+
+        #if __APPLE__
+            #if __has_include(<onnxruntime_cxx_api.h>)
+                #include <onnxruntime_cxx_api.h>
+                #if defined(USE_COREML)
+                    coreml_expected = true;
+                    // Check if the CoreML provider is available in the list of available providers
+                    auto available_providers = Ort::GetAvailableProviders();
+                    for (const auto& provider : available_providers) {
+                        if (provider == "CoreMLExecutionProvider") {
+                            coreml_available = true;
+                            LOG_INFO("CoreML execution provider is available");
+                            break;
+                        }
+                    }
+                    if (!coreml_available) {
+                        LOG_WARNING("CoreML execution provider is not available in the list of providers");
+                    }
+                #else
+                    LOG_INFO("ONNX Runtime is not built with CoreML support");
+                #endif
+            #else
+                LOG_WARNING("onnxruntime_cxx_api.h not found, unable to check for CoreML support");
+            #endif
+        #else
+            LOG_INFO("CoreML is only supported on macOS platforms");
+        #endif
+
+        // Assert based on the result
+        #if __APPLE__
+            LOG_INFO("CoreML support status on macOS: %s", coreml_available ? "Available" : "Not available");
+            LOG_INFO("CoreML support expected: %s", coreml_expected ? "Yes" : "No");
+            ASSERT_TRUE(coreml_available == coreml_expected);
+        #else
+            ASSERT_FALSE(coreml_available);
+        #endif
+
+    } catch (const Ort::Exception& e) {
+        LOG_ERROR("ONNX Runtime error while checking CoreML support: %s", e.what());
+        ASSERT_TRUE(false);  // Test fails if we catch an exception
+    }
 }
