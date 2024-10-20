@@ -26,8 +26,7 @@ fi
 # Navigate to build directory
 cd build
 
-# Run CMake and make
-cmake .. -DPROJECT_VERSION=$VERSION
-make
+# Use nix develop to run CMake and make
+nix develop ..#default --command bash -c "cmake .. -DPROJECT_VERSION=$VERSION && make"
 
 echo "Build complete. Run with: ./scripts/run.sh config/config.ini"
