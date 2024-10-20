@@ -30,6 +30,51 @@ if(DEFINED ENV{ONNXRuntime_ROOT})
 endif()
 find_package(ONNXRuntime REQUIRED)
 
+# Extract ONNX Runtime version from the library path
+string(REGEX MATCH "onnxruntime-([0-9]+\.[0-9]+\.[0-9]+)" ONNXRUNTIME_VERSION ${ONNXRuntime_LIBRARIES})
+set(ONNXRUNTIME_VERSION ${CMAKE_MATCH_1})
+
+# Check for CoreML support in ONNX Runtime
+set(COREML_AVAILABLE FALSE)
+if(APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_COREML")
+
+    # Check if ONNXRuntime is built with CoreML support
+    if(EXISTS "${ONNXRuntime_INCLUDE_DIRS}/onnxruntime_coreml_provider_factory.h")
+        message(STATUS "ONNX Runtime with CoreML support detected")
+        add_definitions(-DONNXRUNTIME_COREML_AVAILABLE)
+        set(COREML_AVAILABLE TRUE)
+    else()
+        message(WARNING "ONNX Runtime found, but CoreML support is not available.")
+        message(STATUS "To enable CoreML support, you may need to rebuild ONNX Runtime with CoreML enabled.")
+    endif()
+
+    # Additional CoreML checks
+    if(COREML_AVAILABLE)
+        # Check for specific CoreML headers
+        if(EXISTS "${ONNXRuntime_INCLUDE_DIRS}/core/providers/coreml/coreml_provider_factory.h")
+            message(STATUS "CoreML provider factory header found")
+        else()
+            message(WARNING "CoreML provider factory header not found")
+        endif()
+
+        # Check for CoreML library
+        find_library(COREML_LIBRARY CoreML)
+        if(COREML_LIBRARY)
+            message(STATUS "CoreML library found: ${COREML_LIBRARY}")
+            target_link_libraries(object-tracking PRIVATE ${COREML_LIBRARY})
+        else()
+            message(WARNING "CoreML library not found")
+        endif()
+
+        # Add CoreML-specific compile definitions
+        add_compile_definitions(USE_COREML)
+        add_compile_definitions(ONNXRUNTIME_COREML_AVAILABLE)
+    endif()
+else()
+    message(STATUS "CoreML support not available (not on Apple platform)")
+endif()
+
 # Include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/core)
@@ -57,7 +102,6 @@ file(GLOB SOURCES
     "src/processors/*.cc"
     "src/utilities/*.cc"
 )
-
 
 # Find the threading library
 find_package(Threads REQUIRED)
@@ -93,6 +137,16 @@ endif()
 # Add test subdirectory
 add_subdirectory(test)
 
-# Export ONNXRuntime variables to subdirectories
-set(ONNXRuntime_LIBRARIES ${ONNXRuntime_LIBRARIES} PARENT_SCOPE)
-set(ONNXRuntime_INCLUDE_DIRS ${ONNXRuntime_INCLUDE_DIRS} PARENT_SCOPE)
+# Print ONNX Runtime configuration
+message(STATUS "ONNX Runtime configuration:")
+message(STATUS "  Version: ${ONNXRUNTIME_VERSION}")
+message(STATUS "  Include Dirs: ${ONNXRuntime_INCLUDE_DIRS}")
+message(STATUS "  Libraries: ${ONNXRuntime_LIBRARIES}")
+
+if(APPLE)
+    message(STATUS "CoreML Configuration:")
+    message(STATUS "  COREML_AVAILABLE: ${COREML_AVAILABLE}")
+    if(COREML_AVAILABLE)
+        message(STATUS "  COREML_LIBRARY: ${COREML_LIBRARY}")
+    endif()
+endif()

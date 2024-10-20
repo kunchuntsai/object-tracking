@@ -2,6 +2,7 @@
 
 ![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+![macOS](https://img.shields.io/badge/verified%20on-macOS-brightgreen.svg)
 
 ## Description
 
@@ -28,14 +29,31 @@ This project provides a C++ interface engine for object tracking, incorporating 
    * Set detection confidence threshold
    * Toggle visualization options (e.g., show/hide bounding boxes, tracking IDs)
 
+5. **Development**
+   * Logging: Enable/disable logs and set several log levels
+   * Profiling: Identify bottleneck of processes
+   * Testing: Have test modules for components
+   * Documentation: Provide classes and dependencies
+
+### TODO
+
+* **Performance Improvement**
+   * Install ONNX Runtime with CoreML support
+   * Memory analysis to check memory footprint and avoid memory copy
+   * SIMD vectorization, e.g. NEON instructions on an ARM machine
+
+* **Testing and build module**
+   * Include auto-run test modules in build process
+   * Optimize CMake List to improve build time
+
 ## Getting Started
 
 ### Prerequisites
 
 Ensure you have the following dependencies installed:
 
-* OpenCV (version 4.0 or later recommended)
-* ONNX Runtime (version 1.8 or later recommended)
+* OpenCV (version 4.7.0)
+* ONNX Runtime (version 1.15.1)
 * Nix (optional, for Nix-based builds)
 
 ### Installation
@@ -70,8 +88,8 @@ To use a custom ONNX model:
 
 Run the program:
 ```
-./build/object-tracking config.ini  # for standard build
-./result/bin/object-tracking config.ini  # for Nix-based build
+./build/object-tracking config/config.ini  # for standard build
+./result/bin/object-tracking config/config.ini  # for Nix-based build
 ```
 
 Perform the tests for logger and onnx loading

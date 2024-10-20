@@ -8,6 +8,31 @@
 
 extern std::string onnx_model_path;
 
+TEST(ONNXRuntimeInstallation) {
+    // Check if we can create an ONNX Runtime environment
+    try {
+        Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "test");
+        LOG_INFO("ONNX Runtime environment created successfully");
+
+        // Get ONNX Runtime version
+        const auto& api = Ort::GetApi();
+        std::cout << "ONNX Runtime version available" << std::endl;
+
+        // List available providers
+        Ort::AllocatorWithDefaultOptions allocator;
+        auto available_providers = Ort::GetAvailableProviders();
+        std::cout << "Available providers:" << std::endl;
+        for (const auto& provider : available_providers) {
+            std::cout << " - " << provider << std::endl;
+        }
+
+        ASSERT_TRUE(true);  // If we've made it this far, the test passes
+    } catch (const Ort::Exception& e) {
+        LOG_ERROR("ONNX Runtime error: %s", e.what());
+        ASSERT_TRUE(false);  // Test fails if we catch an exception
+    }
+}
+
 TEST(ONNXModelLoading) {
     ONNXModel& model = ONNXModel::getInstance();
     ASSERT_TRUE(model.loadModel(onnx_model_path));
