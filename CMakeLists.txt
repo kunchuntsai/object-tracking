@@ -18,11 +18,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Find required packages
 find_package(OpenCV REQUIRED)
-find_package(Protobuf REQUIRED)
-find_package(nlohmann_json REQUIRED)
-find_package(re2 REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(Flatbuffers REQUIRED)
 
 # Find ONNXRuntime
 if(DEFINED ENV{ONNXRuntime_ROOT})
@@ -82,9 +78,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/processors)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/utilities)
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${ONNXRuntime_INCLUDE_DIRS})
-include_directories(${PROTOBUF_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${FLATBUFFERS_INCLUDE_DIR})
 include_directories(${CMAKE_BINARY_DIR})
 
 # Add all header files
@@ -95,7 +89,7 @@ file(GLOB HEADERS
     "src/utilities/*.h"
 )
 
-# Add all source files except main.cc
+# Add all source files including main.cc
 file(GLOB SOURCES
     "src/*.cc"
     "src/core/*.cc"
@@ -115,18 +109,14 @@ endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in ${CMAKE_BINARY_DIR}/version.h @ONLY)
 
 # Create the main executable
-add_executable(object-tracking ${HEADERS} ${SOURCES} ${MAIN_SOURCE})
+add_executable(object-tracking ${HEADERS} ${SOURCES})
 
 # Link libraries
 target_link_libraries(object-tracking PRIVATE
     Threads::Threads
     ${OpenCV_LIBS}
     ${ONNXRuntime_LIBRARIES}
-    ${PROTOBUF_LIBRARIES}
-    nlohmann_json::nlohmann_json
-    re2::re2
     Eigen3::Eigen
-    ${FLATBUFFERS_LIBRARIES}
 )
 
 # Add CoreFoundation for macOS

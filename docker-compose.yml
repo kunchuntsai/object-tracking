@@ -1,0 +1,13 @@
+# docker-compose.yml
+services:
+  object-tracking:
+    build: .
+    volumes:
+      - ./output:/app/output
+      - ./config:/app/config
+      - ../_dataset:/app/_dataset  # Mount dataset directory
+    environment:
+      - DISPLAY=host.docker.internal:0  # This is for macOS
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # This is good for macOS
+    privileged: true

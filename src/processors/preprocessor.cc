@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "config.h"
 #include <chrono>
+#include <atomic>
 
 extern std::atomic<bool> shouldExit;
 extern std::atomic<long long> totalPreprocessTime;

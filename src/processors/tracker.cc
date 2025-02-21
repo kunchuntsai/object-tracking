@@ -4,6 +4,7 @@
 #include "config.h"
 #include <algorithm>
 #include <chrono>
+#include <atomic>
 
 extern std::atomic<bool> shouldExit;
 extern std::atomic<long long> totalTrackerTime;
