@@ -1,10 +1,13 @@
 # Dockerfile
-FROM ubuntu:24.04
+FROM --platform=$TARGETPLATFORM ubuntu:24.04
 
 # Prevent timezone prompt during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies
+# Define ONNX version as build arg with default
+ARG ONNX_VERSION=1.16.3
+
+# Install system dependencies including X11 and Qt dependencies
 RUN apt-get update && apt-get install -y \
     libeigen3-dev \
     build-essential \
@@ -17,26 +20,36 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     file \
+    # X11 and Qt dependencies
+    libx11-xcb1 \
+    libxcb-xinerama0 \
+    libxcb-randr0 \
+    libxcb-xtest0 \
+    libxcb-shape0 \
+    libxcb-xkb1 \
+    libxcb-icccm4 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-render-util0 \
+    libxkbcommon-x11-0 \
+    libxcb-cursor0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install ONNX Runtime with architecture check
+# Install ONNX Runtime with platform-aware architecture detection
 RUN ARCH=$(uname -m) && \
-    ONNX_VERSION=1.16.3 && \
     if [ "$ARCH" = "x86_64" ]; then \
-        wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNX_VERSION}/onnxruntime-linux-x64-${ONNX_VERSION}.tgz \
-        && tar -xzf onnxruntime-linux-x64-${ONNX_VERSION}.tgz \
-        && cp -r onnxruntime-linux-x64-${ONNX_VERSION}/include/* /usr/local/include/ \
-        && cp -r onnxruntime-linux-x64-${ONNX_VERSION}/lib/* /usr/local/lib/ \
-        && rm -rf onnxruntime-linux-x64-${ONNX_VERSION}* ; \
+        ONNX_ARCH="x64"; \
     elif [ "$ARCH" = "aarch64" ]; then \
-        wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNX_VERSION}/onnxruntime-linux-aarch64-${ONNX_VERSION}.tgz \
-        && tar -xzf onnxruntime-linux-aarch64-${ONNX_VERSION}.tgz \
-        && cp -r onnxruntime-linux-aarch64-${ONNX_VERSION}/include/* /usr/local/include/ \
-        && cp -r onnxruntime-linux-aarch64-${ONNX_VERSION}/lib/* /usr/local/lib/ \
-        && rm -rf onnxruntime-linux-aarch64-${ONNX_VERSION}* ; \
+        ONNX_ARCH="aarch64"; \
     else \
         echo "Unsupported architecture: $ARCH" && exit 1; \
-    fi
+    fi && \
+    wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNX_VERSION}/onnxruntime-linux-${ONNX_ARCH}-${ONNX_VERSION}.tgz \
+    && tar -xzf onnxruntime-linux-${ONNX_ARCH}-${ONNX_VERSION}.tgz \
+    && cp -r onnxruntime-linux-${ONNX_ARCH}-${ONNX_VERSION}/include/* /usr/local/include/ \
+    && cp -r onnxruntime-linux-${ONNX_ARCH}-${ONNX_VERSION}/lib/* /usr/local/lib/ \
+    && rm -rf onnxruntime-linux-${ONNX_ARCH}-${ONNX_VERSION}* \
+    && echo "ONNX_VERSION=${ONNX_VERSION}" >> /etc/environment
 
 # Update library cache
 RUN ldconfig
@@ -44,16 +57,16 @@ RUN ldconfig
 # Set working directory
 WORKDIR /app
 
-# Copy the source code
+# Create runtime directory for XDG
+RUN mkdir -p /tmp/runtime-dir && chmod 700 /tmp/runtime-dir
+
+# Copy source code and scripts
 COPY . .
 
-# Create build directory and build the project
-RUN mkdir -p build && \
-    cd build && \
-    cmake .. && \
-    make -j$(nproc) && \
-    # Install to system directory
-    cp object-tracking /usr/local/bin/ && \
+# Make build script executable and run it
+RUN chmod +x scripts/build.sh && \
+    ./scripts/build.sh && \
+    cp build/object-tracking /usr/local/bin/ && \
     chmod +x /usr/local/bin/object-tracking
 
 # Create necessary directories
@@ -61,5 +74,9 @@ RUN mkdir -p /app/output /app/config
 
 # Set the working directory to /app
 WORKDIR /app
+
+# Set default environment variables for X11
+ENV QT_X11_NO_MITSHM=1 \
+    XDG_RUNTIME_DIR=/tmp/runtime-dir
 
 CMD ["/usr/local/bin/object-tracking", "/app/config/config.ini"]

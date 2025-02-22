@@ -29,12 +29,6 @@ This project provides a C++ interface engine for object tracking, incorporating 
    * Set detection confidence threshold
    * Toggle visualization options (e.g., show/hide bounding boxes, tracking IDs)
 
-5. **Development**
-   * Logging: Enable/disable logs and set several log levels
-   * Profiling: Identify bottleneck of processes
-   * Testing: Have test modules for components
-   * Documentation: Provide classes and dependencies
-
 ### TODO
 
 * **Performance Improvement**
@@ -50,33 +44,88 @@ This project provides a C++ interface engine for object tracking, incorporating 
 
 ### Prerequisites
 
-Ensure you have the following dependencies installed:
+Choose one of the following setup methods:
 
+#### Docker Setup (Recommended)
+* Docker Desktop
+* XQuartz (for macOS)
+
+#### Manual Setup
 * OpenCV (version 4.7.0)
-* ONNX Runtime (version 1.15.1)
-* Nix (optional, for Nix-based builds)
+* ONNX Runtime (version 1.16.3)
+* CMake
+* C++ compiler
 
 ### Installation
 
 1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/object-tracking.git
-   cd object-tracking
-   ```
+```bash
+git clone https://github.com/yourusername/object-tracking.git
+cd object-tracking
+```
 
-2. Build the project:
-   - For standard build:
-     ```
-     ./scripts/build.sh 0.1.0  # or your desired version
-     ```
-   - For Nix-based build:
-     ```
-     direnv allow
-     nix flake update
-     nix build
-     ```
+2. Choose your build method:
 
-## ONNX Model
+#### Using Docker (Recommended)
+
+1. Install XQuartz (macOS only):
+```bash
+brew install --cask xquartz
+```
+
+2. Configure XQuartz:
+```bash
+open -a XQuartz
+```
+* In XQuartz preferences (⌘,) → Security tab:
+  - Enable "Allow connections from network clients"
+  - **Important**: Restart XQuartz after changing settings
+
+3. Setup X11 permissions:
+```bash
+xhost + localhost
+```
+
+4. Build and run:
+```bash
+# For a clean build (recommended for first time or after major changes)
+docker compose build --no-cache
+
+# Build and start the container
+docker compose up --build
+
+# Start the container
+docker compose up
+```
+
+The container will mount:
+- `./config`: Configuration files
+- `./output`: Output directory
+- `../_dataset`: Dataset directory
+- X11 socket for display
+
+#### Manual Build
+
+1. Install dependencies (macOS):
+```bash
+brew install opencv
+brew install onnxruntime
+```
+
+2. Build the project: (WIP)
+```bash
+# Build with default settings
+./scripts/build.sh
+
+# Or specify version and build type
+./scripts/build.sh -v 0.1.1 -t Debug
+```
+
+WIP: The build script works identically in both Docker and manual environments, ensuring consistent builds across setups.
+
+## Configuration
+
+### Model Setup
 
 This project uses a YOLOv7 model. Please refer to [Simple-ONNX-runtime-c-example](https://github.com/JINSCOTT/Simple-ONNX-runtime-c-example).
 
@@ -84,34 +133,73 @@ To use a custom ONNX model:
 1. Place your `.onnx` file in a directory
 2. Update the model path in `config/config.ini`
 
-## Usage
-
-Run the program:
-```
-./build/object-tracking config/config.ini  # for standard build
-./result/bin/object-tracking config/config.ini  # for Nix-based build
-```
-
-Perform the tests for logger and onnx loading
-```
-./build/run_tests <path-to-model>  # for standard build
-./result/bin/run_tests <path-to-model>  # for Nix-based build
-```
-
 ### Runtime Controls
 
-- `Q` or `q`: Terminate the program
-- `C` or `c`: Toggle continuous mode
-- `Space`: Advance to the next frame
-- `B` or `b`: Show/hide bounding boxes
+* `Q` or `q`: Quit application
+* `C` or `c`: Toggle continuous mode
+* `Space`: Next frame
+* `B` or `b`: Toggle bounding boxes
 
-## Documentation
+### Config File
+
+Modify settings in `config/config.ini`:
+* Input source (video/camera)
+* Model parameters
+* Display options
+
+## Troubleshooting
+
+### Common Issues
+
+1. **X11 Display Issues (Docker)**
+   * Error: "Could not connect to display" or "qt.qpa.xcb" errors
+   * Fix: 
+     - Ensure XQuartz is running
+     - Run `xhost + localhost`
+     - Check DISPLAY environment variable in docker-compose.yml
+     - Restart XQuartz if needed
+
+2. **Build Issues**
+   * Error: CMake can't find ONNX Runtime
+   * Fix: Verify ONNX Runtime installation path:
+     - Docker: Check Dockerfile paths
+     - Manual: Check brew installation (`brew info onnxruntime`)
+
+3. **Performance Notes**
+   * On M1/M2/M4 Macs: 
+     - Application leverages ARM-specific optimizations
+     - Custom build flags for M-series processors
+     - ONNX Runtime configured for optimal performance
+
+### Getting Help
+
+For unresolved issues:
+1. Check logs:
+   * Docker: `docker compose logs`
+   * Manual: Check build output
+2. Open GitHub issue with:
+   * System info (OS version, Docker/manual setup)
+   * Full error logs
+   * Steps to reproduce
+
+## Development
+
+### Testing
+
+Run the tests:
+```bash
+./build/run_tests <path-to-model>
+```
+
+### Documentation
 
 To generate documentation:
-
 1. Ensure Doxygen is installed
-2. Run `doxygen doc/Doxyfile` from the project root
-3. Open `doc/html/index.html` in a web browser
+2. Run:
+```bash
+doxygen doc/Doxyfile
+```
+3. Open `doc/html/index.html` in a browser
 
 ## License
 
