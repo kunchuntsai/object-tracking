@@ -4,6 +4,22 @@
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![macOS](https://img.shields.io/badge/verified%20on-macOS-brightgreen.svg)
 
+## Table of Contents
+
+- [Description](#description)
+  - [Key Features](#key-features)
+  - [TODO](#todo)
+- [Getting Started](#getting-started)
+  - [Environment Setup - Docker (Recommended)](#environment-setup---docker-recommended)
+  - [Environment Setup - Local Setup](#environment-setup--local-setup)
+- [Project Configuration](#project-configuration)
+  - [Model Setup](#model-setup)
+  - [Runtime Controls](#runtime-controls)
+  - [Config File](#config-file)
+- [Development](#development)
+- [Documentation](#documentation)
+- [License](#license)
+
 ## Description
 
 This project provides a C++ interface engine for object tracking, incorporating image processing, performance optimization, and a simple user interface.
@@ -42,90 +58,97 @@ This project provides a C++ interface engine for object tracking, incorporating 
 
 ## Getting Started
 
-### Prerequisites
+### Environment Setup - Docker (Recommended)
 
-Choose one of the following setup methods:
-
-#### Docker Setup (Recommended)
+**Prerequisites:**
 * Docker Desktop
 * XQuartz (for macOS)
 
-#### Manual Setup
+**Setup Steps:**
+
+1. Install XQuartz (macOS only):
+   ```bash
+   brew install --cask xquartz
+   ```
+
+2. Configure XQuartz:
+   ```bash
+   open -a XQuartz
+   ```
+   In XQuartz preferences (⌘,) → Security tab:
+   - Enable "Allow connections from network clients"
+   - **Important**: Restart XQuartz after changing settings
+
+3. Setup X11 permissions:
+   ```bash
+   xhost + localhost
+   ```
+
+4. Set up the Docker environment:
+   ```bash
+   # For a clean build (recommended for first time or after major changes)
+   docker compose build --no-cache
+
+   # Start the container in background mode
+   docker compose up -d
+   ```
+
+   The container will mount:
+   - `./config`: Configuration files
+   - `./output`: Output directory
+   - `../_dataset`: Dataset directory
+   - X11 socket for display
+
+5. Build the project inside Docker:
+   ```bash
+   # Make the build script executable
+   chmod +x scripts/docker-build.sh
+
+   # Build with default settings
+   ./scripts/docker-build.sh
+
+   # Or specify version and build type
+   ./scripts/docker-build.sh -v 0.1.1 -t Debug
+   ```
+
+   The script will prompt you if you want to run the application after building.
+
+### Environment Setup - Local Setup
+
+**Prerequisites:**
 * OpenCV (version 4.7.0)
 * ONNX Runtime (version 1.16.3)
 * CMake
 * C++ compiler
 
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/object-tracking.git
-cd object-tracking
-```
-
-2. Choose your build method:
-
-#### Using Docker (Recommended)
-
-1. Install XQuartz (macOS only):
-```bash
-brew install --cask xquartz
-```
-
-2. Configure XQuartz:
-```bash
-open -a XQuartz
-```
-* In XQuartz preferences (⌘,) → Security tab:
-  - Enable "Allow connections from network clients"
-  - **Important**: Restart XQuartz after changing settings
-
-3. Setup X11 permissions:
-```bash
-xhost + localhost
-```
-
-4. Build and run:
-```bash
-# For a clean build (recommended for first time or after major changes)
-docker compose build --no-cache
-
-# Build and start the container
-docker compose up --build
-
-# Start the container
-docker compose up
-```
-
-The container will mount:
-- `./config`: Configuration files
-- `./output`: Output directory
-- `../_dataset`: Dataset directory
-- X11 socket for display
-
-#### Manual Build
+**Setup Steps:**
 
 1. Install dependencies (macOS):
-```bash
-brew install opencv
-brew install onnxruntime
-```
+   ```bash
+   brew install opencv
+   brew install onnxruntime
+   ```
 
-2. Build the project: (WIP)
-```bash
-# Build with default settings
-./scripts/build.sh
+2. Build the project:
+   ```bash
+   # Make the build script executable
+   chmod +x scripts/build.sh
 
-# Or specify version and build type
-./scripts/build.sh -v 0.1.1 -t Debug
-```
+   # Build with default settings
+   ./scripts/build.sh
 
-WIP: The build script works identically in both Docker and manual environments, ensuring consistent builds across setups.
+   # Or specify version and build type
+   ./scripts/build.sh -v 0.1.1 -t Debug
+   ```
 
-## Configuration
+3. Run the application:
+   ```bash
+   ./build/object-tracking ./config/config.ini
+   ```
 
-### Model Setup
+## Project Configuration
+
+#### Model Setup
 
 This project uses a YOLOv7 model. Please refer to [Simple-ONNX-runtime-c-example](https://github.com/JINSCOTT/Simple-ONNX-runtime-c-example).
 
@@ -133,72 +156,35 @@ To use a custom ONNX model:
 1. Place your `.onnx` file in a directory
 2. Update the model path in `config/config.ini`
 
-### Runtime Controls
+#### Runtime Controls
 
 * `Q` or `q`: Quit application
 * `C` or `c`: Toggle continuous mode
 * `Space`: Next frame
 * `B` or `b`: Toggle bounding boxes
 
-### Config File
+#### Config File
 
 Modify settings in `config/config.ini`:
 * Input source (video/camera)
 * Model parameters
 * Display options
 
-## Troubleshooting
-
-### Common Issues
-
-1. **X11 Display Issues (Docker)**
-   * Error: "Could not connect to display" or "qt.qpa.xcb" errors
-   * Fix: 
-     - Ensure XQuartz is running
-     - Run `xhost + localhost`
-     - Check DISPLAY environment variable in docker-compose.yml
-     - Restart XQuartz if needed
-
-2. **Build Issues**
-   * Error: CMake can't find ONNX Runtime
-   * Fix: Verify ONNX Runtime installation path:
-     - Docker: Check Dockerfile paths
-     - Manual: Check brew installation (`brew info onnxruntime`)
-
-3. **Performance Notes**
-   * On M1/M2/M4 Macs: 
-     - Application leverages ARM-specific optimizations
-     - Custom build flags for M-series processors
-     - ONNX Runtime configured for optimal performance
-
-### Getting Help
-
-For unresolved issues:
-1. Check logs:
-   * Docker: `docker compose logs`
-   * Manual: Check build output
-2. Open GitHub issue with:
-   * System info (OS version, Docker/manual setup)
-   * Full error logs
-   * Steps to reproduce
-
 ## Development
-
-### Testing
 
 Run the tests:
 ```bash
 ./build/run_tests <path-to-model>
 ```
 
-### Documentation
+## Documentation
 
 To generate documentation:
 1. Ensure Doxygen is installed
 2. Run:
-```bash
-doxygen doc/Doxyfile
-```
+   ```bash
+   doxygen doc/Doxyfile
+   ```
 3. Open `doc/html/index.html` in a browser
 
 ## License
