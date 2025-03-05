@@ -42,86 +42,99 @@ This project provides a C++ interface engine for object tracking, incorporating 
 
 ## Getting Started
 
-### Prerequisites
+### Environment Setup
 
 Choose one of the following setup methods:
 
 #### Docker Setup (Recommended)
+
+Docker is used to create a consistent environment with all dependencies, while the build process happens on demand using scripts.
+
+**Prerequisites:**
 * Docker Desktop
 * XQuartz (for macOS)
 
+**Setup Steps:**
+
+1. Install XQuartz (macOS only):
+   ```bash
+   brew install --cask xquartz
+   ```
+
+2. Configure XQuartz:
+   ```bash
+   open -a XQuartz
+   ```
+   * In XQuartz preferences (⌘,) → Security tab:
+     - Enable "Allow connections from network clients"
+     - **Important**: Restart XQuartz after changing settings
+
+3. Setup X11 permissions:
+   ```bash
+   xhost + localhost
+   ```
+
+4. Set up the Docker environment:
+   ```bash
+   # For a clean build (recommended for first time or after major changes)
+   docker compose build --no-cache
+
+   # Start the container in background mode
+   docker compose up -d
+   ```
+
+   The container will mount:
+   - `./config`: Configuration files
+   - `./output`: Output directory
+   - `../_dataset`: Dataset directory
+   - X11 socket for display
+
+5. Build the project inside Docker:
+   ```bash
+   # Make the build script executable
+   chmod +x scripts/docker-build.sh
+
+   # Build with default settings
+   ./scripts/docker-build.sh
+
+   # Or specify version and build type
+   ./scripts/docker-build.sh -v 0.1.1 -t Debug
+   ```
+
+   The script will prompt you if you want to run the application after building.
+
 #### Manual Setup
+
+**Prerequisites:**
 * OpenCV (version 4.7.0)
 * ONNX Runtime (version 1.16.3)
 * CMake
 * C++ compiler
 
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/object-tracking.git
-cd object-tracking
-```
-
-2. Choose your build method:
-
-#### Using Docker (Recommended)
-
-1. Install XQuartz (macOS only):
-```bash
-brew install --cask xquartz
-```
-
-2. Configure XQuartz:
-```bash
-open -a XQuartz
-```
-* In XQuartz preferences (⌘,) → Security tab:
-  - Enable "Allow connections from network clients"
-  - **Important**: Restart XQuartz after changing settings
-
-3. Setup X11 permissions:
-```bash
-xhost + localhost
-```
-
-4. Build and run:
-```bash
-# For a clean build (recommended for first time or after major changes)
-docker compose build --no-cache
-
-# Build and start the container
-docker compose up --build
-
-# Start the container
-docker compose up
-```
-
-The container will mount:
-- `./config`: Configuration files
-- `./output`: Output directory
-- `../_dataset`: Dataset directory
-- X11 socket for display
-
-#### Manual Build
+**Setup Steps:**
 
 1. Install dependencies (macOS):
-```bash
-brew install opencv
-brew install onnxruntime
-```
+   ```bash
+   brew install opencv
+   brew install onnxruntime
+   ```
 
-2. Build the project: (WIP)
-```bash
-# Build with default settings
-./scripts/build.sh
+2. Build the project:
+   ```bash
+   # Make the build script executable
+   chmod +x scripts/build.sh
 
-# Or specify version and build type
-./scripts/build.sh -v 0.1.1 -t Debug
-```
+   # Build with default settings
+   ./scripts/build.sh
 
-WIP: The build script works identically in both Docker and manual environments, ensuring consistent builds across setups.
+   # Or specify version and build type
+   ./scripts/build.sh -v 0.1.1 -t Debug
+   ```
+
+3. Run the application:
+   ```bash
+   ./build/object-tracking ./config/config.ini
+   ```
 
 ## Configuration
 
