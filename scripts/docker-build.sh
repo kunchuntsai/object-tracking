@@ -79,8 +79,9 @@ fi
 # Check if user wants to run the application after building
 read -p "Run the application now? (y/n): " run_app
 if [[ $run_app == "y" || $run_app == "Y" ]]; then
-    log "Running object-tracking..."
-    docker exec -it object-tracking-env bash -c "/app/build/object-tracking /app/config/config.ini"
+    log "Running object-tracking using docker-run.sh..."
+    # Call docker-run.sh instead of directly running the application
+    ./scripts/docker-run.sh
 fi
 
 log "Done!"
