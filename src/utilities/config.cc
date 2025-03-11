@@ -37,7 +37,7 @@ bool Config::loadFromFile(const std::string& filename) {
     bool videoPathSpecified = false;
 
     // Set default log level mask
-    logLevelMask = LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_INFO;
+    logLevelMask = LOG_LV_ERROR | LOG_LV_WARNING | LOG_LV_INFO;
 
     while (std::getline(file, line)) {
         std::istringstream is_line(line);
@@ -97,10 +97,10 @@ bool Config::loadFromFile(const std::string& filename) {
                         std::transform(trimmedValue.begin(), trimmedValue.end(), trimmedValue.begin(),
                                     [](unsigned char c){ return std::tolower(c); });
                         if (trimmedValue == "true" || trimmedValue == "1" || trimmedValue == "yes") {
-                            logLevelMask |= LOG_LEVEL_DEBUG;
+                            logLevelMask |= LOG_LV_DEBUG;
                             LOG_INFO("Debug logging enabled");
                         } else {
-                            logLevelMask &= ~LOG_LEVEL_DEBUG;
+                            logLevelMask &= ~LOG_LV_DEBUG;
                             LOG_INFO("Debug logging disabled");
                         }
                     }

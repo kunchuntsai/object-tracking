@@ -64,35 +64,49 @@ setup_macos_paths() {
         fi
         
         HOMEBREW_PREFIX=$(brew --prefix)
-        ONNX_CELLAR_PATH="${HOMEBREW_PREFIX}/Cellar/onnxruntime"
         
-        # Check if ONNX Runtime is installed
-        if [ ! -d "$ONNX_CELLAR_PATH" ]; then
+        # Find ONNX Runtime in Homebrew
+        if [ -d "${HOMEBREW_PREFIX}/Cellar/onnxruntime" ]; then
+            INSTALLED_VERSION=$(brew list onnxruntime --versions | awk '{print $2}')
+            log "Found ONNX Runtime version ${INSTALLED_VERSION}"
+            
+            if [ "$INSTALLED_VERSION" != "$ONNX_VERSION" ]; then
+                warn "ONNX Runtime version mismatch: Docker uses $ONNX_VERSION, local version is $INSTALLED_VERSION"
+            fi
+            
+            # Set up paths
+            ONNX_INCLUDE_DIR="${HOMEBREW_PREFIX}/Cellar/onnxruntime/${INSTALLED_VERSION}/include"
+            ONNX_LIBRARY="${HOMEBREW_PREFIX}/Cellar/onnxruntime/${INSTALLED_VERSION}/lib/libonnxruntime.dylib"
+            
+            # Create a simple CMake file for finding ONNX Runtime
+            mkdir -p "${PROJECT_ROOT}/cmake"
+            cat > "${PROJECT_ROOT}/cmake/FindONNXRuntime.cmake" << EOF
+# FindONNXRuntime.cmake
+# Custom finder for ONNXRuntime on macOS
+
+set(ONNXRuntime_INCLUDE_DIRS "${ONNX_INCLUDE_DIR}")
+set(ONNXRuntime_LIBRARIES "${ONNX_LIBRARY}")
+set(ONNXRuntime_FOUND TRUE)
+
+message(STATUS "ONNXRuntime_INCLUDE_DIRS: \${ONNXRuntime_INCLUDE_DIRS}")
+message(STATUS "ONNXRuntime_LIBRARIES: \${ONNXRuntime_LIBRARIES}")
+EOF
+            
+            log "Created custom FindONNXRuntime.cmake"
+            log "Using ONNX Runtime from: ${HOMEBREW_PREFIX}/Cellar/onnxruntime/${INSTALLED_VERSION}"
+
+            export ONNXRuntime_ROOT="$(brew --prefix)/opt/onnxruntime"
+            log "Set ONNXRuntime_ROOT to ${ONNXRuntime_ROOT}"
+            
+            # Check for M4 specific optimizations
+            if [[ $(sysctl -n machdep.cpu.brand_string) =~ "M4" ]]; then
+                log "Detected M4 processor - enabling optimization flags"
+                M4_FLAGS="-mcpu=apple-a14"
+            else
+                M4_FLAGS=""
+            fi
+        else
             error "ONNX Runtime not found. Please install it with: brew install onnxruntime"
-        fi
-        
-        # Check ONNX Runtime version
-        INSTALLED_VERSION=$(brew list onnxruntime --versions | awk '{print $2}')
-        if [ "$INSTALLED_VERSION" != "$ONNX_VERSION" ]; then
-            warn "ONNX Runtime version mismatch: Docker uses $ONNX_VERSION, local version is $INSTALLED_VERSION"
-            warn "Consider installing matching version: brew install onnxruntime@$ONNX_VERSION"
-        fi
-        
-        # Get the installed version path
-        ONNX_PATH="${ONNX_CELLAR_PATH}/${INSTALLED_VERSION}"
-        
-        # Export these for CMake to find
-        export ONNXRuntime_ROOT="${ONNX_PATH}"
-        export ONNXRuntime_INCLUDE_DIR="${ONNX_PATH}/include"
-        export ONNXRuntime_LIBRARY="${ONNX_PATH}/lib/libonnxruntime.dylib"
-        
-        log "Using ONNX Runtime from: ${ONNX_PATH}"
-        
-        # Check for M4 specific optimizations
-        if [[ $(sysctl -n machdep.cpu.brand_string) =~ "M4" ]]; then
-            log "Detected M4 processor - enabling optimization flags"
-            export CFLAGS="-mcpu=apple-a14"
-            export CXXFLAGS="-mcpu=apple-a14"
         fi
     fi
 }
@@ -113,6 +127,14 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+restore_logger() {
+    # Placeholder for any cleanup needed
+    log "Build process completed"
+}
+
+# Clean up from previous runs
+trap restore_logger EXIT
 
 # Check architecture and set up environment
 check_architecture
@@ -139,10 +161,9 @@ if [[ "$OSTYPE" == "darwin"* ]] && ! is_docker; then
     cmake .. \
         -DPROJECT_VERSION=$VERSION \
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+        -DCMAKE_MODULE_PATH="${PROJECT_ROOT}/cmake" \
         -DCMAKE_PREFIX_PATH="${HOMEBREW_PREFIX}" \
-        -DONNXRuntime_ROOT="${ONNXRuntime_ROOT}" \
-        -DONNXRuntime_INCLUDE_DIR="${ONNXRuntime_INCLUDE_DIR}" \
-        -DONNXRuntime_LIBRARY="${ONNXRuntime_LIBRARY}" \
+        -DCMAKE_CXX_FLAGS="${M4_FLAGS}" \
         -DCMAKE_MACOSX_RPATH=ON \
         ${ARCH_FLAGS}
 else
@@ -171,12 +192,11 @@ log "Build complete!"
 echo "Build details:"
 echo "  Version: $VERSION"
 echo "  Build type: $BUILD_TYPE"
-echo "  Build directory: ${BUILD_DIR}"
+echo "  Build directory: ${PROJECT_ROOT}/${BUILD_DIR}"
 if [[ "$OSTYPE" == "darwin"* ]] && ! is_docker; then
     echo "  ONNX Runtime version: $INSTALLED_VERSION"
-    echo "  ONNX Runtime path: ${ONNXRuntime_ROOT}"
-    echo "  ONNX Runtime include: ${ONNXRuntime_INCLUDE_DIR}"
-    echo "  ONNX Runtime library: ${ONNXRuntime_LIBRARY}"
+    echo "  ONNX Runtime include: ${ONNX_INCLUDE_DIR}"
+    echo "  ONNX Runtime library: ${ONNX_LIBRARY}"
     if [[ $(sysctl -n machdep.cpu.brand_string) =~ "M4" ]]; then
         echo "  M4 optimizations: enabled"
     fi
