@@ -77,22 +77,6 @@ setup_macos_paths() {
             # Set up paths
             ONNX_INCLUDE_DIR="${HOMEBREW_PREFIX}/Cellar/onnxruntime/${INSTALLED_VERSION}/include"
             ONNX_LIBRARY="${HOMEBREW_PREFIX}/Cellar/onnxruntime/${INSTALLED_VERSION}/lib/libonnxruntime.dylib"
-            
-            # Create a simple CMake file for finding ONNX Runtime
-            mkdir -p "${PROJECT_ROOT}/cmake"
-            cat > "${PROJECT_ROOT}/cmake/FindONNXRuntime.cmake" << EOF
-# FindONNXRuntime.cmake
-# Custom finder for ONNXRuntime on macOS
-
-set(ONNXRuntime_INCLUDE_DIRS "${ONNX_INCLUDE_DIR}")
-set(ONNXRuntime_LIBRARIES "${ONNX_LIBRARY}")
-set(ONNXRuntime_FOUND TRUE)
-
-message(STATUS "ONNXRuntime_INCLUDE_DIRS: \${ONNXRuntime_INCLUDE_DIRS}")
-message(STATUS "ONNXRuntime_LIBRARIES: \${ONNXRuntime_LIBRARIES}")
-EOF
-            
-            log "Created custom FindONNXRuntime.cmake"
             log "Using ONNX Runtime from: ${HOMEBREW_PREFIX}/Cellar/onnxruntime/${INSTALLED_VERSION}"
 
             export ONNXRuntime_ROOT="$(brew --prefix)/opt/onnxruntime"

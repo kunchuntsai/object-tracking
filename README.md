@@ -101,9 +101,6 @@ This project provides a C++ interface engine for object tracking, incorporating 
 
 5. Build the project inside Docker:
    ```bash
-   # Make the build script executable
-   chmod +x scripts/docker-build.sh
-
    # Build with default settings
    ./scripts/docker-build.sh
 
@@ -111,7 +108,10 @@ This project provides a C++ interface engine for object tracking, incorporating 
    ./scripts/docker-build.sh -v 0.1.1 -t Debug
    ```
 
-   The script will prompt you if you want to run the application after building.
+   The script will prompt you if you want to run the application after building, or run the application:
+   ```bash
+   ./scripts/docker-run.sh
+   ```
 
 ### Environment Setup - Local Setup
 
@@ -131,9 +131,6 @@ This project provides a C++ interface engine for object tracking, incorporating 
 
 2. Build the project:
    ```bash
-   # Make the build script executable
-   chmod +x scripts/build.sh
-
    # Build with default settings
    ./scripts/build.sh
 
