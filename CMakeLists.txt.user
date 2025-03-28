@@ -1,0 +1,58 @@
+# CMakeLists.txt.user - Modified based on onnx_finder.sh results
+message(STATUS "Loading modified ONNXRuntime configuration for Mac M4")
+
+# Explicitly set ONNXRuntime paths for MacOS
+if(APPLE)
+    # Set paths using detected ONNX Runtime installation
+    set(ONNXRuntime_ROOT "/opt/homebrew/opt/onnxruntime")
+    set(ONNXRuntime_INCLUDE_DIRS "${ONNXRuntime_ROOT}/include")
+    set(ONNXRuntime_LIBRARIES "${ONNXRuntime_ROOT}/lib/libonnxruntime.dylib")
+
+    # Add this to make find_package happy
+    set(ONNXRuntime_FOUND TRUE)
+
+    # Create an adapter include directory at build time
+    set(ONNX_ADAPTER_DIR "${CMAKE_BINARY_DIR}/onnx_adapter")
+    file(MAKE_DIRECTORY ${ONNX_ADAPTER_DIR})
+
+    # Configure header adapters based on detected actual structure
+    # Your headers are in /include/onnxruntime/ without the core/session structure
+    message(STATUS "Using custom header structure for ONNX Runtime")
+
+    file(WRITE "${ONNX_ADAPTER_DIR}/onnxruntime_cxx_api.h"
+         "#include <onnxruntime/onnxruntime_cxx_api.h>\n")
+
+    file(WRITE "${ONNX_ADAPTER_DIR}/cpu_provider_factory.h"
+         "#include <onnxruntime/cpu_provider_factory.h>\n")
+
+    # CoreML provider wasn't found, but we'll check anyway
+    if(EXISTS "${ONNXRuntime_INCLUDE_DIRS}/onnxruntime/coreml_provider_factory.h")
+        file(WRITE "${ONNX_ADAPTER_DIR}/onnxruntime_coreml_provider_factory.h"
+             "#include <onnxruntime/coreml_provider_factory.h>\n")
+    endif()
+
+    # Additional adapter for header in onnx_model.h
+    file(WRITE "${ONNX_ADAPTER_DIR}/PROVIDER_HEADER"
+         "#define PROVIDER_HEADER(provider) <onnxruntime_##provider##_provider_factory.h>\n")
+
+    # Add the adapter directory to the include path (before other includes)
+    include_directories(BEFORE ${ONNX_ADAPTER_DIR})
+
+    # Also add the onnxruntime subdirectory directly to the include path
+    include_directories(BEFORE "${ONNXRuntime_INCLUDE_DIRS}/onnxruntime")
+
+    # Set specific flags for M4 processor
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+        message(STATUS "Setting optimization flags for M4 processor")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mcpu=apple-a14 -O3")
+    endif()
+
+    # Debug output
+    message(STATUS "Using ONNX Runtime configuration:")
+    message(STATUS "  ONNXRuntime_ROOT: ${ONNXRuntime_ROOT}")
+    message(STATUS "  ONNXRuntime_INCLUDE_DIRS: ${ONNXRuntime_INCLUDE_DIRS}")
+    message(STATUS "  ONNXRuntime_LIBRARIES: ${ONNXRuntime_LIBRARIES}")
+    message(STATUS "  ONNX_ADAPTER_DIR: ${ONNX_ADAPTER_DIR}")
+    message(STATUS "  ONNX Runtime version: 1.20.2")
+    message(STATUS "  Header structure: Custom (onnxruntime subdirectory)")
+endif()

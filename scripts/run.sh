@@ -1,0 +1,1 @@
+./result/bin/object-tracking config/config.ini
