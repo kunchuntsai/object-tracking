@@ -12,21 +12,21 @@
 #include <cstdarg>
 
 /// @brief Log level: No logging
-#define LOG_LEVEL_NONE    0
+#define LOG_LV_NONE    0
 /// @brief Log level: Error messages only
-#define LOG_LEVEL_ERROR   1
+#define LOG_LV_ERROR   1
 /// @brief Log level: Warning and error messages
-#define LOG_LEVEL_WARNING 2
+#define LOG_LV_WARNING 2
 /// @brief Log level: Info, warning, and error messages
-#define LOG_LEVEL_INFO    4
+#define LOG_LV_INFO    4
 /// @brief Log level: All messages including debug
-#define LOG_LEVEL_DEBUG   8
+#define LOG_LV_DEBUG   8
 
 /**
  * @brief Set the desired log level here (can be overridden by compiler flags)
  */
 #ifndef LOG_LEVEL
-#define LOG_LEVEL (LOG_LEVEL_ERROR | LOG_LEVEL_WARNING | LOG_LEVEL_INFO)
+#define LOG_LEVEL (LOG_LV_ERROR | LOG_LV_WARNING | LOG_LV_INFO)
 #endif
 
 /**
@@ -40,11 +40,11 @@ public:
      * @brief Enumeration of log levels
      */
     enum class LogLevel {
-        NONE = LOG_LEVEL_NONE,     /**< No logging */
-        ERROR = LOG_LEVEL_ERROR,   /**< Error messages only */
-        WARNING = LOG_LEVEL_WARNING, /**< Warning and error messages */
-        INFO = LOG_LEVEL_INFO,     /**< Info, warning, and error messages */
-        DEBUG = LOG_LEVEL_DEBUG    /**< All messages including debug */
+        NONE = LOG_LV_NONE,     /**< No logging */
+        ERROR = LOG_LV_ERROR,   /**< Error messages only */
+        WARNING = LOG_LV_WARNING, /**< Warning and error messages */
+        INFO = LOG_LV_INFO,     /**< Info, warning, and error messages */
+        DEBUG = LOG_LV_DEBUG    /**< All messages including debug */
     };
 
     /**

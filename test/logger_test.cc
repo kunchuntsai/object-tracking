@@ -17,14 +17,14 @@ std::string captureLogOutput(std::function<void()> logFunction) {
 
 // Helper function to reset log level to all levels
 void resetLogLevel() {
-    Logger::getInstance().setLogLevel(LOG_LEVEL_DEBUG | LOG_LEVEL_INFO | LOG_LEVEL_WARNING | LOG_LEVEL_ERROR);
+    Logger::getInstance().setLogLevel(LOG_LV_DEBUG | LOG_LV_INFO | LOG_LV_WARNING | LOG_LV_ERROR);
 }
 
 TEST(LogLevels) {
     Logger& logger = Logger::getInstance();
     
     // Test individual log levels
-    logger.setLogLevel(LOG_LEVEL_DEBUG | LOG_LEVEL_INFO | LOG_LEVEL_WARNING | LOG_LEVEL_ERROR);
+    logger.setLogLevel(LOG_LV_DEBUG | LOG_LV_INFO | LOG_LV_WARNING | LOG_LV_ERROR);
     
     std::string output = captureLogOutput([]() {
         LOG_DEBUG("Debug message");
@@ -44,7 +44,7 @@ TEST(LogLevels) {
 TEST(ChangingLogLevels) {
     Logger& logger = Logger::getInstance();
     
-    logger.setLogLevel(LOG_LEVEL_WARNING | LOG_LEVEL_ERROR);
+    logger.setLogLevel(LOG_LV_WARNING | LOG_LV_ERROR);
     
     std::string output = captureLogOutput([]() {
         LOG_DEBUG("Debug message");
@@ -64,7 +64,7 @@ TEST(ChangingLogLevels) {
 TEST(CombiningLogLevels) {
     Logger& logger = Logger::getInstance();
     
-    logger.setLogLevel(LOG_LEVEL_DEBUG | LOG_LEVEL_ERROR);
+    logger.setLogLevel(LOG_LV_DEBUG | LOG_LV_ERROR);
     
     std::string output = captureLogOutput([]() {
         LOG_DEBUG("Debug message");
@@ -83,7 +83,7 @@ TEST(CombiningLogLevels) {
 
 TEST(ThreadSafety) {
     Logger& logger = Logger::getInstance();
-    logger.setLogLevel(LOG_LEVEL_INFO);
+    logger.setLogLevel(LOG_LV_INFO);
 
     std::vector<std::thread> threads;
     std::vector<std::string> outputs;
@@ -111,7 +111,7 @@ void printSingleLine(const char* message) {
 
 TEST(LoggingPerformance) {
     Logger& logger = Logger::getInstance();
-    logger.setLogLevel(LOG_LEVEL_DEBUG);
+    logger.setLogLevel(LOG_LV_DEBUG);
 
     const int numMessages = 1000;
     auto start = std::chrono::high_resolution_clock::now();
@@ -156,7 +156,7 @@ TEST(LoggingPerformance) {
 
 TEST(DisablingAllLogs) {
     Logger& logger = Logger::getInstance();
-    logger.setLogLevel(LOG_LEVEL_NONE);
+    logger.setLogLevel(LOG_LV_NONE);
 
     std::string output = captureLogOutput([]() {
         LOG_DEBUG("Debug message");

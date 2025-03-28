@@ -1,0 +1,1 @@
+./result/bin/run_tests "../_dataset/models/yolov7-tiny.onnx"
