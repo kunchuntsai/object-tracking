@@ -1,5 +1,12 @@
-# Include user configuration if it exists
-include(CMakeLists.txt.user OPTIONAL)
+# Detect if we're in a Nix build environment
+if(DEFINED ENV{NIX_BUILD_TOP})
+    message(STATUS "Building in Nix environment")
+    # Don't include user configuration in Nix build
+else()
+    message(STATUS "Building in local environment")
+    # Include user configuration if it exists (for local builds)
+    include(CMakeLists.txt.user OPTIONAL)
+endif()
 
 cmake_minimum_required(VERSION 3.10)
 
